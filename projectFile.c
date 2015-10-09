@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+
 int main()
 {
 
@@ -45,7 +46,7 @@ if(ifp!=NULL){
 				fgetc(ifp);
 
 			}else{
-				insertedValue= 0;
+				insertedValue= 2;
 
 			}
 			
@@ -67,8 +68,110 @@ if(ifp!=NULL){
 }else{
 	printf("The file was not open!\n");
 }
-
 //////////////////////data structure uploaded//////////////////
+
+
+float w1 [626][9][3];
+float w2 [332][9][3];
+
+//Calculating conditional probability W1
+
+int nW1=626;
+int nW2=332;
+int nAtributes=9;
+
+for (int i = 0; i < nW1; ++i)
+{
+	for (int j = 0;  j< nAtributes; ++j)
+	{
+		//Calculating parameters p,q,r
+		float sumP=0;
+		float sumQ=0;
+		float sumR=0;
+
+		for (int p = 0; p <nW1 ; ++p)
+		{
+			sumP+= data[p][j]*(data[p][j]+1)/2;
+		}
+
+		for (int p = 0; p <nW1 ; ++p)
+		{   
+			//printf("%i\n",data[p][j]);
+			sumQ+= (1-((data[p][j])*(data[p][j])));
+
+			//printf("%f\n",sumQ);
+		}
+
+		for (int p = 0; p <nW1 ; ++p)
+		{
+			sumR+= data[p][j]*(data[p][j]-1)/2;
+		}
+
+
+		/*printf("SumP= %f\n", sumP);
+		printf("SumQ= %f\n", sumQ);
+		printf("SumR= %f\n", sumR);*/
+		
+		w1[i][j][0]=(1.0/626.0)*sumP;
+		
+		w1[i][j][1]=(1.0/626.0)*sumQ;
+		
+		w1[i][j][2]=(1.0/626.0)*sumR;	
+		
+	}
+}
+
+for (int i = 0; i < nW2; ++i)
+{
+	for (int j = 0;  j< nAtributes; ++j)
+	{
+		//Calculating parameters p,q,r
+		float sumP=0;
+		float sumQ=0;
+		float sumR=0;
+
+		for (int p = 0; p <nW2 ; ++p)
+		{
+			sumP+= data[p+nW1][j]*(data[p+nW1][j]+1)/2;
+		}
+
+		for (int p = 0; p <nW2 ; ++p)
+		{   
+			//printf("%i\n",data[p][j]);
+			sumQ+= (1-((data[p+nW1][j])*(data[p+nW1][j])));
+
+			//printf("%f\n",sumQ);
+		}
+
+		for (int p = 0; p <nW2 ; ++p)
+		{
+			sumR+= data[p+nW1][j]*(data[p+nW1][j]-1)/2;
+		}
+
+
+		/*printf("SumP= %f\n", sumP);
+		printf("SumQ= %f\n", sumQ);
+		printf("SumR= %f\n", sumR);*/
+		
+		w2[i][j][0]=(1.0/332.0)*sumP;
+		
+		w2[i][j][1]=(1.0/332.0)*sumQ;
+		
+		w2[i][j][2]=(1.0/332.0)*sumR;	
+		
+	}
+}
+
+for (int i = 0; i <nW2; ++i)
+{
+	for (int j = 0; j < nAtributes; ++j)
+	{
+		printf("p= %f ", w2[i][j][0]);
+		printf("q= %f ", w2[i][j][1]);
+		printf("r= %f\n", w2[i][j][2]);
+	}
+
+}
 
 
 

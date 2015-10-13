@@ -3,7 +3,7 @@
 
 //change the return of the task after the function is complete
 void task2(int data[958][10]){
-	
+
 	int nSample=958;
 	float w1 [1][9][3];
 	float w2 [1][9][3];
@@ -14,8 +14,7 @@ void task2(int data[958][10]){
 	int nW2=332;
 	int nAtributes=9;
 
-	//calculating the probability of class1 
-
+	//calculating the probability of class1
 	for (int j = 0;  j< nAtributes; ++j)
 	{
 		//Calculating parameters p,q,r
@@ -29,7 +28,7 @@ void task2(int data[958][10]){
 		}
 
 		for (int p = 0; p <nW1 ; ++p)
-		{   
+		{
 			sumQ+= (1-((data[p][j])*(data[p][j])));
 		}
 
@@ -42,15 +41,15 @@ void task2(int data[958][10]){
 		/*printf("SumP= %f\n", sumP);
 		printf("SumQ= %f\n", sumQ);
 		printf("SumR= %f\n", sumR);*/
-		
+
 		w1[0][j][0]=(1.0/626.0)*sumP;
-		
+
 		w1[0][j][1]=(1.0/626.0)*sumQ;
-		
-		w1[0][j][2]=(1.0/626.0)*sumR;	
-		
+
+		w1[0][j][2]=(1.0/626.0)*sumR;
+
 	}
-	
+
 
 	//calculating the probability of c
 
@@ -67,7 +66,7 @@ void task2(int data[958][10]){
 		}
 
 		for (int p = 0; p <nW2 ; ++p)
-		{   
+		{
 			sumQ+= (1-((data[p+nW1][j])*(data[p+nW1][j])));
 		}
 
@@ -77,20 +76,21 @@ void task2(int data[958][10]){
 		}
 
 		w2[0][j][0]=(1.0/332.0)*sumP;
-		
+
 		w2[0][j][1]=(1.0/332.0)*sumQ;
-		
-		w2[0][j][2]=(1.0/332.0)*sumR;	
-		
+
+		w2[0][j][2]=(1.0/332.0)*sumR;
+
 	}
-	
+
 
 //Calculating conditional probability
 float cProbaility[958][2];
 float a=0;
 float b=0;
+
 for (int i = 0; i < nSample; ++i)
-{	
+{
 	float cW1=1;
 
 	//Case: P(X|w1)
@@ -99,8 +99,8 @@ for (int i = 0; i < nSample; ++i)
 		cW1=cW1*(pow(w1[0][j][0],(data[i][j]*(data[i][j]+1)/2))*
 			pow(w1[0][j][1],(1-((data[i][j])*(data[i][j]))))*
 			pow(w1[0][j][2],(data[i][j]*(data[i][j]-1)/2)));
-		
-		
+
+
 	}
 	cProbaility[i][0]=cW1;
 	printf("w1= %f\n",cW1);
@@ -113,15 +113,46 @@ for (int i = 0; i < nSample; ++i)
 		cW2=cW2*(pow(w2[0][j][0],(data[i][j]*(data[i][j]+1)/2))*
 			pow(w2[0][j][1],(1-((data[i][j])*(data[i][j]))))*
 			pow(w2[0][j][2],(data[i][j]*(data[i][j]-1)/2)));
-		
+
 	}
 	cProbaility[i][1]=cW2;
 	printf("w2= %f\n",cProbaility[i][1]);
-	
+
 }
 
+/* Probability a priori */
+float pW[2] = {(626.0/958.0), (332.0/958.0)};
 
+/*Calculating probabilities a posteriori */
+float pProbability[2][958];
 
+for (i=0; i<2; ++i)
+{
+    for (j=0; j< nSample; ++j)
+    {
+        pProbability[i][j] = (cProbaility[j][i] * pW[i]) / ( (cProbaility[j][0] * pW[0]) + (cProbaility[j][1] * pW[1]));
+    }
+}
+
+/* Classification of x respect with the rule given */
+int Clasificador [nSample];
+
+for (i=0; i<nSample; ++i)
+{
+    printf("Probability of w1 having x%d = %f \n", i, pProbability[0][i]);
+    printf("Probability of w2 having x%d = %f \n", i, pProbability[1][i]);
+
+    if (pProbability[0][i] >= pProbability[1][i])
+    {
+            Clasificador[i]=1;
+    }
+    else
+    {
+            Clasificador[i]=2;
+    }
+
+    printf("x%d in class %d\n", i, Clasificador[i]);
+}
 
 /*for (int i = 0; i <1; ++i)
 {
@@ -187,7 +218,7 @@ if(ifp!=NULL){
 				insertedValue= 2;
 
 			}
-			
+
 			data[i][j]=insertedValue;
 			j++;
 
@@ -198,11 +229,11 @@ if(ifp!=NULL){
 			}
 
 		}
-	      
+
 	}
 
 	fclose(ifp);
-	
+
 }else{
 	printf("The file was not open!\n");
 }

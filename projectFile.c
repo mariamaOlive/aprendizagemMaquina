@@ -1,6 +1,96 @@
 #include <stdio.h>
 #include <math.h>
+#include <stdlib.h>
+#include <time.h>
 
+
+//Task1
+void task1(int data[958][10]){
+
+int nObjects=958;
+int dMatrix[958][958]; 
+int nAtributes=9;
+
+	//Dimilarity Matrix
+	for (int i = 0; i < 958; i++)
+	{	
+
+		for (int j = i; j < 958; j++)
+		{
+			int cont=0;
+
+			for (int k = 0; k < nAtributes; k++)
+			{
+				if(data[i][k]!=data[j][k]){
+					cont++;
+				}
+			}
+
+			dMatrix[i][j]=cont;
+			dMatrix[j][i]=cont;
+		}
+	}
+
+	//Clustering Algorithm
+	//Parameters
+	int k=2; //number of clusters
+	int m=2; //
+	int T=150; //an iteration limit
+	float e= pow(10, -10);
+	int q=2;
+	int t=0; //counts the number of iterations
+
+	int proto[k];
+
+	srand(time(NULL));
+	//Selecting prototypes
+	for (int i = 0; i < k; i++)
+	{
+		int selected = rand()%(nObjects-1);
+
+		proto[i]=selected;
+		printf("selected: %i\n", selected);
+	}
+
+	float memberDregree[k][nObjects];
+
+	for (int i = 0; i < nObjects; i++)
+	{
+		for (int j = 0; j < k; j++)
+		{
+			float sum=0;
+			for (int p = 0;  p< k; p++)
+			{
+				printf("%i,%i,%i\n",i,j,p);
+				printf("i:%i, p:%i\n",i, proto[p] );
+				printf("dis=>%i\n",dMatrix[i][proto[p]]);
+
+				if(i!=proto[p]){
+					
+					sum+=pow((dMatrix[i][proto[j]])/(dMatrix[i][proto[p]]),(1/(m-1)));
+					
+				}else{
+					sum+=1;
+				}
+			//	printf("oi1\n" );
+			
+			}
+
+
+			memberDregree[j][i]=(1/sum);
+			//printf("oi2\n" );
+			//printf("%f\n", memberDregree[j][i]);
+			//printf("check: %i\n",i );
+			
+		}
+	}
+
+
+
+}
+
+
+//Task2
 //change the return of the task after the function is complete
 void task2(int data[958][10]){
 
@@ -103,7 +193,7 @@ for (int i = 0; i < nSample; ++i)
 
 	}
 	cProbaility[i][0]=cW1;
-	printf("w1= %f\n",cW1);
+	
 
 
 	float cW2=1;
@@ -116,6 +206,7 @@ for (int i = 0; i < nSample; ++i)
 
 	}
 	cProbaility[i][1]=cW2;
+
 	printf("w2= %f\n",cProbaility[i][1]);
 
 }
@@ -239,8 +330,15 @@ if(ifp!=NULL){
 }
 //////////////////////data structure uploaded//////////////////
 
+//Tasks
 
+//Task 1
+task1(data);
+
+
+//Task 2
 task2(data);
+
 
 
 

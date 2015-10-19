@@ -4,6 +4,24 @@
 #include <time.h>
 
 
+//Auxiliary functions
+//Swap Elements in an array
+void swap(int *a, int *b){
+	int temp=*a;
+	*a=*b;
+	*b=temp;
+}
+
+//Radomize an array (Complexity=O(n) o/)
+void randArray(int *array, int nElements){
+	srand(time(NULL));
+
+	for(int i=nElements-1; i>0; i--){
+		int j= rand()%(i+1);
+		swap(&array[i],&array[j]);
+	}
+}
+
 //Task1
 void task1(int data[958][10]){
 
@@ -105,24 +123,24 @@ void task2(int data[958][10]){
 	int nAtributes=9;
 
 	//calculating the probability of class1
-	for (int j = 0;  j< nAtributes; ++j)
+	for (int j = 0;  j< nAtributes; j++)
 	{
 		//Calculating parameters p,q,r
 		float sumP=0;
 		float sumQ=0;
 		float sumR=0;
 
-		for (int p = 0; p <nW1 ; ++p)
+		for (int p = 0; p <nW1 ; p++)
 		{
 			sumP+= data[p][j]*(data[p][j]+1)/2;
 		}
 
-		for (int p = 0; p <nW1 ; ++p)
+		for (int p = 0; p <nW1 ; p++)
 		{
 			sumQ+= (1-((data[p][j])*(data[p][j])));
 		}
 
-		for (int p = 0; p <nW1 ; ++p)
+		for (int p = 0; p <nW1 ; p++)
 		{
 			sumR+= data[p][j]*(data[p][j]-1)/2;
 		}
@@ -143,24 +161,24 @@ void task2(int data[958][10]){
 
 	//calculating the probability of c
 
-	for (int j = 0;  j< nAtributes; ++j)
+	for (int j = 0;  j< nAtributes; j++)
 	{
 		//Calculating parameters p,q,r
 		float sumP=0;
 		float sumQ=0;
 		float sumR=0;
 
-		for (int p = 0; p <nW2 ; ++p)
+		for (int p = 0; p <nW2 ; p++)
 		{
 			sumP+= data[p+nW1][j]*(data[p+nW1][j]+1)/2;
 		}
 
-		for (int p = 0; p <nW2 ; ++p)
+		for (int p = 0; p <nW2 ; p++)
 		{
 			sumQ+= (1-((data[p+nW1][j])*(data[p+nW1][j])));
 		}
 
-		for (int p = 0; p <nW2 ; ++p)
+		for (int p = 0; p <nW2 ; p++)
 		{
 			sumR+= data[p+nW1][j]*(data[p+nW1][j]-1)/2;
 		}
@@ -179,12 +197,12 @@ float cProbaility[958][2];
 float a=0;
 float b=0;
 
-for (int i = 0; i < nSample; ++i)
+for (int i = 0; i < nSample; i++)
 {
 	float cW1=1;
 
 	//Case: P(X|w1)
-	for (int j = 0; j < nAtributes; ++j)
+	for (int j = 0; j < nAtributes; j++)
 	{
 		cW1=cW1*(pow(w1[0][j][0],(data[i][j]*(data[i][j]+1)/2))*
 			pow(w1[0][j][1],(1-((data[i][j])*(data[i][j]))))*
@@ -198,7 +216,7 @@ for (int i = 0; i < nSample; ++i)
 
 	float cW2=1;
 	//Case: P(X|w2)
-	for (int j = 0; j < nAtributes; ++j)
+	for (int j = 0; j < nAtributes; j++)
 	{
 		cW2=cW2*(pow(w2[0][j][0],(data[i][j]*(data[i][j]+1)/2))*
 			pow(w2[0][j][1],(1-((data[i][j])*(data[i][j]))))*
@@ -207,7 +225,7 @@ for (int i = 0; i < nSample; ++i)
 	}
 	cProbaility[i][1]=cW2;
 
-	printf("w2= %f\n",cProbaility[i][1]);
+	//printf("w2= %f\n",cProbaility[i][1]);
 
 }
 
@@ -217,9 +235,9 @@ float pW[2] = {(626.0/958.0), (332.0/958.0)};
 /*Calculating probabilities a posteriori */
 float pProbability[2][958];
 
-for (i=0; i<2; ++i)
+for (int i=0; i<2; i++)
 {
-    for (j=0; j< nSample; ++j)
+    for (int j=0; j< nSample; j++)
     {
         pProbability[i][j] = (cProbaility[j][i] * pW[i]) / ( (cProbaility[j][0] * pW[0]) + (cProbaility[j][1] * pW[1]));
     }
@@ -228,7 +246,7 @@ for (i=0; i<2; ++i)
 /* Classification of x respect with the rule given */
 int Clasificador [nSample];
 
-for (i=0; i<nSample; ++i)
+for (int i=0; i<nSample; i++)
 {
     printf("Probability of w1 having x%d = %f \n", i, pProbability[0][i]);
     printf("Probability of w2 having x%d = %f \n", i, pProbability[1][i]);
@@ -245,7 +263,7 @@ for (i=0; i<nSample; ++i)
     printf("x%d in class %d\n", i, Clasificador[i]);
 }
 
-/*for (int i = 0; i <1; ++i)
+for (int i = 0; i <1; ++i)
 {
 	for (int j = 0; j < nAtributes; ++j)
 	{
@@ -254,7 +272,7 @@ for (i=0; i<nSample; ++i)
 		printf("r= %f\n", w1[i][j][2]);
 	}
 
-}*/
+}
 
 
 
@@ -329,15 +347,63 @@ if(ifp!=NULL){
 	printf("The file was not open!\n");
 }
 //////////////////////data structure uploaded//////////////////
+//Task 1
+	task1(data);
+	//Task 2
+	//task2(data);
+
+
+/*int kFold=1;
 
 //Tasks
 
-//Task 1
-task1(data);
+if(kFold==0){
+	//Task 1
+	task1(data);
+	//Task 2
+	task2(data);
+}else{
+	//With cross validation
+
+	//Randomize input data
 
 
-//Task 2
-task2(data);
+	//Each folder will contain 95 samples (62 positive / 33 negative) that will be chosen randomly
+	nFold=10;
+	nPositive=62;
+	nNegative=33;
+	nTotal=nPositive+nNegative;
+	nAtributes=9;
+
+	int kData [nFold][nTotal][nAtributes];
+
+	for (int i = 0; i < nTotal ; i++)
+	{
+		for (int i = 0; i < nTotal; ++i)
+		{
+			if
+		}
+	}
+}
+*/
+
+/*int n[958];
+for(int i=0; i<958; i++){
+	n[i]=i;
+}
+
+randArray(n,626);
+randArray(&n[626], 332);
+
+
+for (int i = 0; i < 958; ++i)
+{
+	printf("%i ",n[i]);
+}*/
+
+
+
+
 
 
 

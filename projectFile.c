@@ -90,16 +90,10 @@ int nAtributes=9;
 				}else{
 					sum+=1;
 				}
-			//	printf("oi1\n" );
-			
 			}
 
 
 			memberDregree[j][i]=(1/sum);
-			//printf("oi2\n" );
-			//printf("%f\n", memberDregree[j][i]);
-			//printf("check: %i\n",i );
-			
 		}
 	}
 
@@ -110,16 +104,17 @@ int nAtributes=9;
 
 //Task2
 //change the return of the task after the function is complete
-void task2(int data[958][10]){
+void task2(int data[950][10], int startValidation, int nPositive, int nNegative, int nTotal, int nFold){
 
-	int nSample=958;
+	
 	float w1 [1][9][3];
 	float w2 [1][9][3];
 
 	//Calculating conditional probability p,q,r
 
-	int nW1=626;
-	int nW2=332;
+	int nW1=(nPositive*nFold)-nPositive;
+	int nW2=(nNegative*nFold)-nNegative;
+	int nSample=nW1+nW2;
 	int nAtributes=9;
 
 	//calculating the probability of class1
@@ -130,36 +125,32 @@ void task2(int data[958][10]){
 		float sumQ=0;
 		float sumR=0;
 
-		for (int p = 0; p <nW1 ; p++)
-		{
-			sumP+= data[p][j]*(data[p][j]+1)/2;
+		int cont=0;
+
+		for (int p = 0; p < nTotal; p++)
+		{ 
+			//Only calculates values relative to class 1 and skips validation folder
+			if((data[p][9])==1 && (p<startValidation || p>=(startValidation+(nPositive+nNegative))))
+			{
+				sumP+= data[p][j]*(data[p][j]+1)/2;
+				sumQ+= (1-((data[p][j])*(data[p][j])));
+				sumR+= data[p][j]*(data[p][j]-1)/2;
+				cont++;
+			}
 		}
 
-		for (int p = 0; p <nW1 ; p++)
-		{
-			sumQ+= (1-((data[p][j])*(data[p][j])));
-		}
-
-		for (int p = 0; p <nW1 ; p++)
-		{
-			sumR+= data[p][j]*(data[p][j]-1)/2;
-		}
+		// printf("SumP= %f\n", sumP);
+		// printf("SumQ= %f\n", sumQ);
+		// printf("SumR= %f\n", sumR);
 
 
-		/*printf("SumP= %f\n", sumP);
-		printf("SumQ= %f\n", sumQ);
-		printf("SumR= %f\n", sumR);*/
-
-		w1[0][j][0]=(1.0/626.0)*sumP;
-
-		w1[0][j][1]=(1.0/626.0)*sumQ;
-
-		w1[0][j][2]=(1.0/626.0)*sumR;
-
+		w1[0][j][0]=(1.0/(float)nW1)*sumP;
+		w1[0][j][1]=(1.0/(float)nW1)*sumQ;
+		w1[0][j][2]=(1.0/(float)nW1)*sumR;
 	}
 
 
-	//calculating the probability of c
+	//calculating the probability of class 2
 
 	for (int j = 0;  j< nAtributes; j++)
 	{
@@ -168,51 +159,45 @@ void task2(int data[958][10]){
 		float sumQ=0;
 		float sumR=0;
 
-		for (int p = 0; p <nW2 ; p++)
-		{
-			sumP+= data[p+nW1][j]*(data[p+nW1][j]+1)/2;
+		
+		for (int p = 0; p < nTotal; p++)
+		{ 
+			//Only calculates values relative to class 2 and skips validation folder
+			if((data[p][9])==2 && (p<startValidation || p>=(startValidation+(nPositive+nNegative))))
+			{
+				sumP+= data[p][j]*(data[p][j]+1)/2;
+				sumQ+= (1-((data[p][j])*(data[p][j])));
+				sumR+= data[p][j]*(data[p][j]-1)/2;
+			}
 		}
 
-		for (int p = 0; p <nW2 ; p++)
-		{
-			sumQ+= (1-((data[p+nW1][j])*(data[p+nW1][j])));
-		}
-
-		for (int p = 0; p <nW2 ; p++)
-		{
-			sumR+= data[p+nW1][j]*(data[p+nW1][j]-1)/2;
-		}
-
-		w2[0][j][0]=(1.0/332.0)*sumP;
-
-		w2[0][j][1]=(1.0/332.0)*sumQ;
-
-		w2[0][j][2]=(1.0/332.0)*sumR;
-
+		w2[0][j][0]=(1.0/(float)nW2)*sumP;
+		w2[0][j][1]=(1.0/(float)nW2)*sumQ;
+		w2[0][j][2]=(1.0/(float)nW2)*sumR;
 	}
 
-
-//Calculating conditional probability
-float cProbaility[958][2];
+//Checking the value found with the validation set
+//Calculating Evidence of both classes (P|wj)
 float a=0;
 float b=0;
+int tValidation= nPositive+nNegative;
+float cProbaility[tValidation][2];
 
-for (int i = 0; i < nSample; i++)
+int k=0;
+int right=0;
+int wrong=0;
+int Clasificador [tValidation];
+for (int i = startValidation; i < (startValidation+tValidation); i++, k++)
 {
 	float cW1=1;
-
+	
 	//Case: P(X|w1)
 	for (int j = 0; j < nAtributes; j++)
 	{
 		cW1=cW1*(pow(w1[0][j][0],(data[i][j]*(data[i][j]+1)/2))*
 			pow(w1[0][j][1],(1-((data[i][j])*(data[i][j]))))*
 			pow(w1[0][j][2],(data[i][j]*(data[i][j]-1)/2)));
-
-
 	}
-	cProbaility[i][0]=cW1;
-	
-
 
 	float cW2=1;
 	//Case: P(X|w2)
@@ -223,61 +208,58 @@ for (int i = 0; i < nSample; i++)
 			pow(w2[0][j][2],(data[i][j]*(data[i][j]-1)/2)));
 
 	}
-	cProbaility[i][1]=cW2;
+	
+	//printf("w2= %f\n",cW1);
+	//printf("w2= %f\n",cW2);
 
-	//printf("w2= %f\n",cProbaility[i][1]);
 
-}
 
 /* Probability a priori */
-float pW[2] = {(626.0/958.0), (332.0/958.0)};
+	float pW[2] = {(626.0/958.0), (332.0/958.0)}; //A gente tem que colocar essa probabilidade de acordo com o k-fold
 
-/*Calculating probabilities a posteriori */
-float pProbability[2][958];
+	/*Calculating probabilities a posteriori */
+	//float pProbability[2][958];
+	float pProbability1 = (cW1 * pW[0]) / ( (cW1 * pW[0]) + (cW2 * pW[1]));
+	float pProbability2 = (cW2 * pW[1]) / ( (cW1 * pW[0]) + (cW2 * pW[1]));
+	
 
-for (int i=0; i<2; i++)
-{
-    for (int j=0; j< nSample; j++)
+	//printf("Probability of w1 having x%d = %f \n", k, pProbability1);
+	//printf("Probability of w2 having x%d = %f \n", k, pProbability2);
+
+    if (pProbability1 >= pProbability2)
     {
-        pProbability[i][j] = (cProbaility[j][i] * pW[i]) / ( (cProbaility[j][0] * pW[0]) + (cProbaility[j][1] * pW[1]));
-    }
-}
-
-/* Classification of x respect with the rule given */
-int Clasificador [nSample];
-
-for (int i=0; i<nSample; i++)
-{
-    printf("Probability of w1 having x%d = %f \n", i, pProbability[0][i]);
-    printf("Probability of w2 having x%d = %f \n", i, pProbability[1][i]);
-
-    if (pProbability[0][i] >= pProbability[1][i])
-    {
-            Clasificador[i]=1;
+            Clasificador[k]=1;
     }
     else
     {
-            Clasificador[i]=2;
+            Clasificador[k]=2;
     }
 
-    printf("x%d in class %d\n", i, Clasificador[i]);
-}
+    //printf("x%d in class %d\n", k, Clasificador[k]);
+	
 
-for (int i = 0; i <1; ++i)
-{
-	for (int j = 0; j < nAtributes; ++j)
-	{
-		printf("p= %f ", w1[i][j][0]);
-		printf("q= %f ", w1[i][j][1]);
-		printf("r= %f\n", w1[i][j][2]);
+	//verifies if the pattern was correctly classified
+	if(Clasificador[k]==data[i][9]){
+		right++;
+	}else{
+		wrong++;
 	}
-
 }
 
+	// for (int i = 0; i <1; ++i)
+	// {
+	// 	for (int j = 0; j < nAtributes; ++j)
+	// 	{
+	// 		printf("p= %f ", w1[i][j][0]);
+	// 		printf("q= %f ", w1[i][j][1]);
+	// 		printf("r= %f\n", w1[i][j][2]);
+	// 	}
 
-
-
+	// }
+	printf("correctly classified %i\n",right);
+	printf("wrongly classified %i\n",wrong);
 }
+
 
 int main()
 {
@@ -348,64 +330,99 @@ if(ifp!=NULL){
 }
 //////////////////////data structure uploaded//////////////////
 //Task 1
-	task1(data);
-	//Task 2
+	//task1(data);
+//Task 2
 	//task2(data);
 
 
-/*int kFold=1;
+int kFold=1;
 
 //Tasks
-
-if(kFold==0){
-	//Task 1
-	task1(data);
-	//Task 2
-	task2(data);
-}else{
-	//With cross validation
-
-	//Randomize input data
-
-
-	//Each folder will contain 95 samples (62 positive / 33 negative) that will be chosen randomly
-	nFold=10;
-	nPositive=62;
-	nNegative=33;
-	nTotal=nPositive+nNegative;
-	nAtributes=9;
-
-	int kData [nFold][nTotal][nAtributes];
-
-	for (int i = 0; i < nTotal ; i++)
-	{
-		for (int i = 0; i < nTotal; ++i)
-		{
-			if
-		}
-	}
-}
+/*Algorithm:
+	-Create folder randomically (positive and negative)
+		-do 10x	
+			-do 62x {fill the array with positives}
+			-do 33x {fill the array with negatives}
+	-Do 10x
+		-Create a new array of trainingData and validationData
+		-Train with 9 folders and validate with 1
+			-Enter function: kData, startValidationData, numberPositive, numberNegative, numberFolder
+			-Inside the tasks when training ask to skip the range of the validationData
+			-and when validating just use the range of the validationData
+		-Update startValidationData 
 */
 
-/*int n[958];
-for(int i=0; i<958; i++){
-	n[i]=i;
-}
+		//With cross validation
 
-randArray(n,626);
-randArray(&n[626], 332);
+		//Randomize input data
+		//Each folder will contain 95 samples (62 positive / 33 negative) that will be chosen randomly
+		int nFold=10;
+		int nPositive=62;
+		int nNegative=33;
+		int nTotal=nPositive+nNegative;
+		
+
+		int kData [nTotal*nFold][10];
+
+		//Creating randomized array as base
+		int n[958];
+		for(int i=0; i<958; i++){
+			n[i]=i;
+		}
+		randArray(n,626);
+		randArray(&n[626], 332);
+
+		int P=0;
+		int N=626;
+		int i=0;
+
+		//Filling folders
+		for (int f = 0; f < nFold ; f++){
+			
+			int pAux= P+nPositive;
+			for (; P < pAux ; P++, i++)
+			{	
+				for (int j = 0; j < 10; j++)
+				{
+					kData[i][j]=data[n[P]][j];
+				}
+			}
+
+			int nAux= N+nNegative;
+			for (; N < nAux; N++, i++)
+			{
+				for (int j = 0; j < 10; j++)
+				{
+					kData[i][j]=data[n[N]][j];
+				}
+			}
+		}
+
+		//Calling tasks to execute with cross validation
+
+		//Updating trainingData and validationData
+	
+		int startValidation=0;
+
+		for (int i = 0; i < nFold; ++i)
+		{
+			task2(kData, startValidation,nPositive,nNegative,nTotal*nFold,nFold);
+			startValidation+=(nPositive+nNegative);
+		}
+
+	//	task2(kData, startValidation,nPositive,nNegative,nTotal*nFold,nFold);
+	
 
 
-for (int i = 0; i < 958; ++i)
-{
-	printf("%i ",n[i]);
-}*/
-
-
-
-
-
-
+		// for (int i = 0; i < nTotal*nFold; ++i)
+		// {printf("%i=", i);
+		// 	for (int j = 0; j < 10; j++)
+		// 	{
+		// 		printf("%i ",kData[i][j]);
+		// 	}
+		// 	printf("\n");
+		// }
+	
 
 
 return 0;

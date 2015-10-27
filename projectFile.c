@@ -22,6 +22,50 @@ void randArray(int *array, int nElements){
 	}
 }
 
+//Confidence Interval
+void confidenceInterval(float sampleSize, float mean, float variance){
+	//Confidence interval of 95% ->Z(α/2)= 1.96
+	//With Normal
+	//e=Z(α/2)*(σ/sqrt n)
+
+	float sigma = sqrt(variance);
+	float e= 1.96 * (sigma/sqrt(sampleSize));
+
+	float intDown=mean-e;
+	float intUp=mean+e;
+
+	printf("Confidence Interval:\n");
+	printf("(%f <= μ <= %f) = 95%%\n", intDown,intUp);
+}
+
+//Calculating Mean μ e Variance  σˆ2
+void statistics(float sample[], int sampleSize){
+
+	float mean;
+	float variance;
+	float sampleSum=0;
+
+
+	//Mean
+	for (int i = 0; i <sampleSize ; i++)
+	{
+		sampleSum+=sample[i];
+	}
+
+	mean=sampleSum/sampleSize;
+
+	//Variance
+	sampleSum=0;
+	for (int i = 0; i < sampleSize; i++)
+	{
+		sampleSum+=pow((sample[i]-mean),2);
+	}
+	variance=sampleSum/sampleSize;
+
+	confidenceInterval(sampleSize, mean, variance);
+}
+
+
 //Task1
 void task1(int data[958][10]){
 
@@ -104,7 +148,7 @@ int nAtributes=9;
 
 //Task2
 //change the return of the task after the function is complete
-void task2(int data[950][10], int startValidation, int nPositive, int nNegative, int nTotal, int nFold){
+float task2(int data[950][10], int startValidation, int nPositive, int nNegative, int nTotal, int nFold){
 
 	
 	float w1 [1][9][3];
@@ -256,8 +300,17 @@ for (int i = startValidation; i < (startValidation+tValidation); i++, k++)
 	// 	}
 
 	// }
-	printf("correctly classified %i\n",right);
-	printf("wrongly classified %i\n",wrong);
+
+	//Mean 
+
+	//Variance
+
+	//Confidence interval
+	// printf("correctly classified %i\n",right);
+	// printf("wrongly classified %i\n",wrong);
+	// printf("\n");
+
+	return ((float)wrong/(float)tValidation)*100; //returns the percentage of wrongly classified
 }
 
 
@@ -363,53 +416,63 @@ int kFold=1;
 		
 
 		int kData [nTotal*nFold][10];
-
-		//Creating randomized array as base
 		int n[958];
 		for(int i=0; i<958; i++){
-			n[i]=i;
-		}
-		randArray(n,626);
-		randArray(&n[626], 332);
-
-		int P=0;
-		int N=626;
-		int i=0;
-
-		//Filling folders
-		for (int f = 0; f < nFold ; f++){
-			
-			int pAux= P+nPositive;
-			for (; P < pAux ; P++, i++)
-			{	
-				for (int j = 0; j < 10; j++)
-				{
-					kData[i][j]=data[n[P]][j];
-				}
-			}
-
-			int nAux= N+nNegative;
-			for (; N < nAux; N++, i++)
-			{
-				for (int j = 0; j < 10; j++)
-				{
-					kData[i][j]=data[n[N]][j];
-				}
-			}
+				n[i]=i;
 		}
 
 		//Calling tasks to execute with cross validation
 
-		//Updating trainingData and validationData
-	
-		int startValidation=0;
+		int executeKFold=10;
+		float meansTask2 [100];
+		int cont=0;
 
-		for (int i = 0; i < nFold; ++i)
+		//Execute k-fold 10x... in the end we are going to have 100 samples
+		for (int j = 0; j < executeKFold ; j++)
 		{
-			task2(kData, startValidation,nPositive,nNegative,nTotal*nFold,nFold);
-			startValidation+=(nPositive+nNegative);
-		}
+			//Creating randomized array as base
+			randArray(n,626);
+			randArray(&n[626], 332);
 
+			int P=0;
+			int N=626;
+			int i=0;
+
+			//Filling folders
+			for (int f = 0; f < nFold ; f++){
+				
+				int pAux= P+nPositive;
+				for (; P < pAux ; P++, i++)
+				{	
+					for (int j = 0; j < 10; j++)
+					{
+						kData[i][j]=data[n[P]][j];
+					}
+				}
+
+				int nAux= N+nNegative;
+				for (; N < nAux; N++, i++)
+				{
+					for (int j = 0; j < 10; j++)
+					{
+						kData[i][j]=data[n[N]][j];
+					}
+				}
+			}
+
+			int startValidation=0;
+
+			for (int i = 0; i < nFold; i++)
+			{
+				//Task 2: Naive Bayesian Classifier
+				meansTask2[cont]=task2(kData, startValidation,nPositive,nNegative,nTotal*nFold,nFold);
+				cont++;
+				//Updating trainingData and validationData
+				startValidation+=(nPositive+nNegative);
+			}
+		}
+		
+		statistics(meansTask2,100);
 	//	task2(kData, startValidation,nPositive,nNegative,nTotal*nFold,nFold);
 	
 

@@ -5,6 +5,13 @@
 
 
 //Auxiliary functions
+//Comparte two elements
+int cmpfunc (const void * a, const void * b)
+{
+   return ( *(float*)a - *(float*)b );
+}
+
+
 //Swap Elements in an array
 void swap(int *a, int *b){
 	int temp=*a;
@@ -102,45 +109,218 @@ int nAtributes=9;
 	int q=2;
 	int t=0; //counts the number of iterations
 
-	int proto[k];
+	int proto[k][q];
 
 	srand(time(NULL));
 	//Selecting prototypes
 	for (int i = 0; i < k; i++)
 	{
-		int selected = rand()%(nObjects-1);
-
-		proto[i]=selected;
-		printf("selected: %i\n", selected);
+		for (int j = 0; j < q; j++)
+		{
+			int selected = rand()%(nObjects-1);
+			proto[i][j]=selected;
+			printf("selected: %i\n", proto[i][j]);
+		}
+		
 	}
 
-	float memberDregree[k][nObjects];
+	float memberDregree[nObjects][k];
 
 	for (int i = 0; i < nObjects; i++)
 	{
 		for (int j = 0; j < k; j++)
 		{
-			float sum=0;
+			float sum0=0;
 			for (int p = 0;  p< k; p++)
 			{
-				printf("%i,%i,%i\n",i,j,p);
-				printf("i:%i, p:%i\n",i, proto[p] );
-				printf("dis=>%i\n",dMatrix[i][proto[p]]);
+					float sum1=0;
+					float sum2=0;
+					float sum3=0;
 
-				if(i!=proto[p]){
-					
-					sum+=pow((dMatrix[i][proto[j]])/(dMatrix[i][proto[p]]),(1/(m-1)));
-					
-				}else{
-					sum+=1;
-				}
+					for (int r = 0; r< q; r++)
+					{
+						//if(i!=proto[p][r]){
+							sum2+=dMatrix[i][proto[j][r]];
+							sum3+=dMatrix[i][proto[p][r]];
+						//}else{
+						//	sum2=1;
+						//	sum3=1;
+						//}
+					}
+
+					sum1=sum2/sum3;
+
+					sum1=pow(sum1, (1/(m-1)));
+
+					sum0+=sum1;
 			}
 
-
-			memberDregree[j][i]=(1/sum);
+			memberDregree[i][j]=(1/sum0);
+		}
+		
+		if(i<10){
+		printf("%i -> u1= %f ",i, memberDregree[i][0]);
+		printf("u2= %f\n", memberDregree[i][1]);
 		}
 	}
 
+	//Calculating J
+	float J=0;
+	for (int i = 0; i < k; i++)
+	{
+		for (int j = 0; j < nObjects; j++)
+		{	
+			float sumQ=0;
+			for (int n = 0; n < q; n++)
+			{
+				sumQ+=dMatrix[j][proto[i][n]];
+			}
+
+			J+= pow(memberDregree[j][i],m)*sumQ;
+		}
+	}
+	printf("J= %f\n", J);
+
+	//Cleaning prototype
+	// for (int i = 0; i < k; i++)
+	// {
+	// 	for (int j = 0; j < q; j++)
+	// 	{
+	// 		proto[k][q]=-1;
+	// 	}
+	// }
+	
+	for (; (t < 150); t++) //Updating t
+	{
+	
+		//Choosing again the prototypes
+		 for (int r = 0; r < k; r++)
+		 {
+			float allPrototypes [nObjects][2];
+				
+				for (int j = 0; j < nObjects; j++) //=> h
+				{
+					float arg=0;
+					for (int s = 0; s < nObjects; s++) //=> i
+					{
+						arg+= pow(memberDregree[s][r],m)*dMatrix[s][j];
+					}
+
+					allPrototypes[j][0]=arg;
+					allPrototypes[j][1]=j;
+				}
+
+				qsort(allPrototypes, nObjects, 2*(sizeof(float)),cmpfunc);
+
+
+				 // for (int i = 0; i <5; ++i)
+				 // {
+					// printf("%f %i\n",allPrototypes[i][0], (int) allPrototypes[i][1]);
+				 // }
+
+				for (int i = 0; i < q; i++)
+				{
+					proto[r][i]=(int)allPrototypes[i][1];
+					printf("selected: %i\n",proto[r][i]);
+				}
+		}
+	
+		for (int i = 0; i < nObjects; i++)
+		{
+			for (int j = 0; j < k; j++)
+			{
+				float sum0=0;
+				for (int p = 0;  p< k; p++)
+				{
+					// printf("%i,%i,%i\n",i,j,p);
+					// printf("i:%i, p:%i\n",i, proto[p] );
+					// printf("dis=>%i\n",dMatrix[i][proto[p]]);
+
+						float sum1=0;
+						float sum2=0;
+						float sum3=0;
+
+						for (int r = 0; r< q; r++)
+						{
+							//if(i!=proto[p][r]){
+								sum2+=dMatrix[i][proto[j][r]];
+								sum3+=dMatrix[i][proto[p][r]];
+							// }else{
+							// 	sum2=1;
+							// 	sum3=1;
+							// }
+						}
+
+						sum1=sum2/sum3;
+
+						sum1=pow(sum1, (1/(m-1)));
+
+						sum0+=sum1;
+				}
+
+				memberDregree[i][j]=(1/sum0);
+			}
+
+
+			
+			 if(i<10){
+			 	printf("%i -> u1= %f ",i, memberDregree[i][0]);
+			 	printf("u2= %f\n", memberDregree[i][1]);
+			 }
+		}
+
+
+		//Calculating J
+		float J1=0;
+		for (int i = 0; i < k; i++)
+		{
+			for (int j = 0; j < nObjects; j++)
+			{	
+				float sumQ=0;
+				for (int n = 0; n < q; n++)
+				{
+					sumQ+=dMatrix[j][proto[i][n]];
+				}
+
+				J1+= pow(memberDregree[j][i],m)*sumQ;
+			}
+		}
+
+		printf("e= %f\n", fabs(J1-J));
+		printf("J= %f\n", J1);
+
+		//Comparing J(t) with J(t-1)
+		if(fabs(J1-J)<=e){
+			break;
+		}
+
+		J=J1;
+		
+	}
+	
+	int class[nObjects];
+	int numberErrors=0;
+
+	for (int i = 0; i < nObjects; i++)
+	{
+	//printf("%i -> u1= %f ",i, memberDregree[i][0]);
+	//printf("u2= %f\n", memberDregree[i][1]);
+
+		if(memberDregree[i][0]>memberDregree[i][1]){
+			class[i]=1;
+		}else{
+			class[i]=2;
+		}
+	}
+
+	for (int i = 0; i < nObjects; i++)
+	{
+		if(class[i]!=data[i][9]){
+			numberErrors++;
+		}
+	}
+	
+	printf("Porcentagem de Erro= %f\n", ((float)numberErrors/(float)nObjects));
 
 
 }
@@ -383,7 +563,7 @@ if(ifp!=NULL){
 }
 //////////////////////data structure uploaded//////////////////
 //Task 1
-	//task1(data);
+	task1(data);
 //Task 2
 	//task2(data);
 

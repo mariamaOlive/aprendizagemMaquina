@@ -76,6 +76,7 @@ void statistics(float sample[], int sampleSize){
 //Task1
 void task1(int data[958][10]){
 
+
 int nObjects=958;
 int dMatrix[958][958]; 
 int nAtributes=9;
@@ -94,11 +95,19 @@ int nAtributes=9;
 					cont++;
 				}
 			}
-
 			dMatrix[i][j]=cont;
 			dMatrix[j][i]=cont;
 		}
 	}
+
+	// for (int i = 0; i < 958; ++i)
+	// {
+	// 	for (int j = 0; j < 958; ++j)
+	// 	{
+	// 		printf("%i ",dMatrix[i][j]);
+	// 	}
+	// 	printf("\n");
+	// }
 
 	//Clustering Algorithm
 	//Parameters
@@ -106,11 +115,16 @@ int nAtributes=9;
 	int m=2; //
 	int T=150; //an iteration limit
 	float e= pow(10, -10);
-	int q=2;
+	int q=2; //Cardinality of the prototype set
 	int t=0; //counts the number of iterations
 
 	int proto[k][q];
 
+	float bestJ=100000000;
+	float J, J1;
+	int bestProto[k][q];
+
+for(int l=0; l<100; l++){
 	srand(time(NULL));
 	//Selecting prototypes
 	for (int i = 0; i < k; i++)
@@ -158,14 +172,14 @@ int nAtributes=9;
 			memberDregree[i][j]=(1/sum0);
 		}
 		
-		if(i<10){
-		printf("%i -> u1= %f ",i, memberDregree[i][0]);
-		printf("u2= %f\n", memberDregree[i][1]);
-		}
+		//if(i<5){
+		//printf("%i -> u1= %f ",i, memberDregree[i][0]);
+		//printf("u2= %f\n", memberDregree[i][1]);
+		//}
 	}
 
 	//Calculating J
-	float J=0;
+	J=0;
 	for (int i = 0; i < k; i++)
 	{
 		for (int j = 0; j < nObjects; j++)
@@ -180,6 +194,7 @@ int nAtributes=9;
 		}
 	}
 	printf("J= %f\n", J);
+
 
 	//Cleaning prototype
 	// for (int i = 0; i < k; i++)
@@ -213,10 +228,10 @@ int nAtributes=9;
 				qsort(allPrototypes, nObjects, 2*(sizeof(float)),cmpfunc);
 
 
-				 // for (int i = 0; i <5; ++i)
-				 // {
-					// printf("%f %i\n",allPrototypes[i][0], (int) allPrototypes[i][1]);
-				 // }
+				//  for (int i = 0; i <5; ++i)
+				//  {
+				//	 printf("%f %i\n",allPrototypes[i][0], (int) allPrototypes[i][1]);
+				//  }
 
 				for (int i = 0; i < q; i++)
 				{
@@ -263,15 +278,15 @@ int nAtributes=9;
 
 
 			
-			 if(i<10){
-			 	printf("%i -> u1= %f ",i, memberDregree[i][0]);
-			 	printf("u2= %f\n", memberDregree[i][1]);
-			 }
+			// if(i<5){
+			// 	printf("%i -> u1= %f ",i, memberDregree[i][0]);
+			// 	printf("u2= %f\n", memberDregree[i][1]);
+			// }
 		}
 
 
 		//Calculating J
-		float J1=0;
+		J1=0;
 		for (int i = 0; i < k; i++)
 		{
 			for (int j = 0; j < nObjects; j++)
@@ -292,36 +307,62 @@ int nAtributes=9;
 
 		//Comparing J(t) with J(t-1)
 		if(fabs(J1-J)<=e){
+
 			break;
 		}
 
 		J=J1;
 		
 	}
-	
-	int class[nObjects];
-	int numberErrors=0;
 
-	for (int i = 0; i < nObjects; i++)
+	if(J<bestJ){
+		bestJ=J;
+		for (int i = 0; i < k; ++i)
 	{
-	//printf("%i -> u1= %f ",i, memberDregree[i][0]);
-	//printf("u2= %f\n", memberDregree[i][1]);
-
-		if(memberDregree[i][0]>memberDregree[i][1]){
-			class[i]=1;
-		}else{
-			class[i]=2;
+		for (int j = 0; j < q; ++j)
+		{
+			bestProto[i][j]=proto[i][j];
 		}
 	}
-
-	for (int i = 0; i < nObjects; i++)
-	{
-		if(class[i]!=data[i][9]){
-			numberErrors++;
-		}
 	}
 	
-	printf("Porcentagem de Erro= %f\n", ((float)numberErrors/(float)nObjects));
+	// int class[nObjects];
+	// int numberErrors=0;
+
+
+	// for (int i = 0; i < nObjects; i++)
+	// {
+	// //printf("%i -> u1= %f ",i, memberDregree[i][0]);
+	// //printf("u2= %f\n", memberDregree[i][1]);
+
+	// 	if(memberDregree[i][0]>memberDregree[i][1]){
+	// 		class[i]=1;
+	// 	}else{
+	// 		class[i]=2;
+	// 	}
+	// }
+
+	// for (int i = 0; i < nObjects; i++)
+	// {
+	// 	if(class[i]!=data[i][9]){
+	// 		numberErrors++;
+	// 	}
+	// }
+
+	
+
+	
+	//printf("Porcentagem de Erro= %f\n", ((float)numberErrors/(float)nObjects));
+}
+
+printf("bestJ= %f\n", bestJ);
+	for (int i = 0; i < k; ++i)
+	{
+		for (int j = 0; j < q; ++j)
+		{
+			printf("%i\n",bestProto[i][j] );
+		}
+	}
 }
 
 
@@ -555,6 +596,31 @@ if(ifp!=NULL){
 
 	}
 
+	//Writing on file for the SVM classifier
+	//Label used= +1 for positive cases and -1 for negative cases
+	// char *modeSVM="w";
+	// char *fileNameSVM="tic-tac-toeSVM";
+	// FILE *ofp;
+	// ofp= fopen(fileNameSVM, modeSVM);
+
+	// if(ofp!=NULL){
+	// 	printf("SVM File successfully opened for Writing!\n");
+
+	// 	for (int i = 0; i < 958; i++)
+	// 	{	//Label
+	// 		fprintf(ofp, "%d", data[i][9]);
+	// 		for (int j = 0; j < 9; j++)
+	// 		{	
+	// 			fprintf(ofp, " %d:%d",(j),data[i][j]);
+	// 		}
+	// 		fprintf(ofp, "\n");
+	// 	}
+
+	// }else{
+	// 	printf("The SVM file was not open!\n");
+	// }
+
+	// fclose(ofp);
 	fclose(ifp);
 
 }else{

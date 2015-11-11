@@ -533,6 +533,131 @@ for (int i = startValidation; i < (startValidation+tValidation); i++, k++)
 	return ((float)wrong/(float)tValidation)*100; //returns the percentage of wrongly classified
 }
 
+void task2b(int data[958][10]){
+
+int nObjects=5;
+int dMatrix[958][958]; // 713 o max
+int nAtributes=9;
+
+	//Dimilarity Matrix
+	int i;
+	for (i = 0; i < 958; i++)
+	{
+        int j;
+		for (j = i; j < 958; ++j)
+		{
+			int cont=0;
+            int k;
+			for (k = 0; k < nAtributes; k++)
+			{
+				if(data[i][k]!=data[j][k]){
+					cont++;
+				}
+			}
+			dMatrix[i][j]=cont;
+			printf("Dissimilarity between i:%d and j:%d = %d\n",i, j, dMatrix[i][j]);
+			dMatrix[j][i]=cont;
+		}
+		printf("\n");
+	}
+
+int v=10; //Numero de vizinhos
+int p; //Xp where p in [1..n]
+int fin[958][3]; //Tabela de resultados
+
+for (p=0; p<958; p++)
+{
+    int res[v][4]; // Tabela que vai contender os v vinzinhos mais proximos
+    printf("\n\n**** p = %d *** \n\n", p);
+
+    //Initialization of
+    for (i=0; i<v;  i++) res[i][0]=-1;
+
+    for (i=0; i<v; i++)
+    {
+        // Search for the first value posible
+        int min =0;
+        int r;
+
+        int ok1=1;
+        int ok2=1;
+            while ((ok1 != 0) && (ok2!=0))
+            {
+                if (p==min)
+                {
+                    if (min == 99)
+                        min = 0;
+                    else min++;
+                    ok1=0;
+                }
+                else
+                    ok1=0;
+
+                for (r=0; r<v; r++)
+                {
+                    if (min==res[r][0])
+                    {
+                        if (min == 99)
+                            min = 0;
+                        else min++;
+                        ok2=1;
+                        ok1=1;
+                    }
+                }
+            }
+         
+        printf("Initial minimum is: %d\n", min);
+
+        int j;
+        // Searching for the max dissimilarity between xp and the others x
+        for (j=0; j<958; j++)
+        {
+            int ok=0;
+
+            // Verificação que o elemento j não ja apartene a tabela de resultados
+            for (r=0; r<v; r++)
+                if (res[r][0]==j)
+                    ok++;
+
+            // Si o elemento não esta na tabela de resultados
+            if (ok==0) {
+                if (dMatrix[j][p] <= dMatrix[min][p] && j != p)
+                {
+                    min=j;
+                }
+            }
+
+        }
+
+        res[i][0]=min; //Saving of the indice
+        res[i][1]=data[min][9]; //Saving of the class of the indice
+
+        printf("Min = %d | Dissimilarity = %d | vinzinhos mais proximo numero %d  | classe = %d\n", res[i][0],dMatrix[min][p], i, res[i][1]);
+    }
+
+    //Counting of the results
+    int count1=0, count2=0;
+
+    for (i=0; i<v; i++)
+        if (res[i][1]==1)
+            count1++;
+        else
+            count2++;
+
+    printf("count1=%d, count2=%d \n", count1, count2);
+
+    fin[p][1]=count1/v;
+    fin[p][2]=count2/v;
+
+    if (count1>count2)
+        fin[p][0]=1;
+    else fin[p][0]=2;
+
+    printf("p=%d dans la classe %d", p, fin[p][0]);
+}
+}
+
+
 
 int main()
 {
@@ -628,9 +753,10 @@ if(ifp!=NULL){
 }
 //////////////////////data structure uploaded//////////////////
 //Task 1
-	task1(data);
+	//task1(data);
 //Task 2
 	//task2(data);
+	task2b(data);
 
 
 int kFold=1;

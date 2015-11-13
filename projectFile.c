@@ -816,7 +816,7 @@ int kFold=1;
 				//Writing on file for the SVM classifier
 				//Label used= +1 for positive cases and -1 for negative cases
 
-				char *path= "/Users/mariamaoliveira/Documents/UFPE/2015-2/IF699_AM/Projeto"; //I did not manage to use relative pahth
+				char *path= "/Users/mariamaoliveira/Documents/UFPE/2015-2/IF699_AM/Projeto/aprendizagemMaquina"; //I did not manage to use relative pahth
 				//SVM input
 				char trainingNameSVM[1000];
 				//Path to the project folder

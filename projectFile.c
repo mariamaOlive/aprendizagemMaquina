@@ -721,31 +721,7 @@ if(ifp!=NULL){
 
 	}
 
-	//Writing on file for the SVM classifier
-	//Label used= +1 for positive cases and -1 for negative cases
-	// char *modeSVM="w";
-	// char *fileNameSVM="tic-tac-toeSVM";
-	// FILE *ofp;
-	// ofp= fopen(fileNameSVM, modeSVM);
-
-	// if(ofp!=NULL){
-	// 	printf("SVM File successfully opened for Writing!\n");
-
-	// 	for (int i = 0; i < 958; i++)
-	// 	{	//Label
-	// 		fprintf(ofp, "%d", data[i][9]);
-	// 		for (int j = 0; j < 9; j++)
-	// 		{	
-	// 			fprintf(ofp, " %d:%d",(j),data[i][j]);
-	// 		}
-	// 		fprintf(ofp, "\n");
-	// 	}
-
-	// }else{
-	// 	printf("The SVM file was not open!\n");
-	// }
-
-	// fclose(ofp);
+	
 	fclose(ifp);
 
 }else{
@@ -756,7 +732,7 @@ if(ifp!=NULL){
 	//task1(data);
 //Task 2
 	//task2(data);
-	task2b(data);
+	//task2b(data);
 
 
 int kFold=1;
@@ -832,14 +808,123 @@ int kFold=1;
 			}
 
 			int startValidation=0;
+			int startValidation2=nPositive+nNegative;
 
 			for (int i = 0; i < nFold; i++)
 			{
+				//Writing k-fold data on files
+				//Writing on file for the SVM classifier
+				//Label used= +1 for positive cases and -1 for negative cases
+
+				char *path= "/Users/mariamaoliveira/Documents/UFPE/2015-2/IF699_AM/Projeto"; //I did not manage to use relative pahth
+				//SVM input
+				char trainingNameSVM[1000];
+				//Path to the project folder
+				sprintf(trainingNameSVM,"%s/data_kfold/SVM/%i/SVMtraining%i",path,j,i);
+				//printf("%s\n", trainingNameSVM);
+				char testNameSVM[1000];
+				sprintf(testNameSVM,"%s/data_kfold/SVM/%i/SVMtest%i",path,j,i);
+				char *modeW="w";
+
+				FILE *fTraining;
+				FILE *fTest;
+				fTraining= fopen(trainingNameSVM, modeW);
+				fTest=fopen(testNameSVM,modeW);
+
+				if(fTraining!=NULL || fTest!=NULL){
+					printf("SVM File successfully opened for Writing!\n");
+					
+					for (int l = 0; l < 950; l++)
+					{	//Label
+						if(l<startValidation || l>=(startValidation+(nPositive+nNegative))){
+							fprintf(fTraining, "%d", kData[l][9]);
+							for (int j = 0; j < 9; j++)
+							{	
+								fprintf(fTraining, " %d:%d",(j),kData[l][j]);
+							}
+							fprintf(fTraining, "\n");
+						}else{
+							fprintf(fTest, "%d", kData[l][9]);
+							for (int j = 0; j < 9; j++)
+							{	
+								fprintf(fTest, " %d:%d",(j),kData[l][j]);
+							}
+							fprintf(fTest, "\n");
+						}
+					}
+
+				}else{
+					printf("The SVM file was not open!\n");
+				}
+
+				fclose(fTraining);
+				fclose(fTest);
+
+				//MLP input
+				char trainingNameMLP[1000];
+				sprintf(trainingNameMLP,"%s/data_kfold/MLP/%i/MLPtraining%i.csv",path,j,i);
+				char testNameMLP[1000];
+				sprintf(testNameMLP,"%s/data_kfold/MLP/%i/MLPtest%i.csv",path,j,i);
+				char validationNameMLP[1000];
+				sprintf(validationNameMLP,"%s/data_kfold/MLP/%i/MLPvalidation%i.csv",path,j,i);
+
+				FILE *fTrainingMLP;
+				FILE *fTestMLP;
+				FILE *fValidationMLP;
+				fTrainingMLP= fopen(trainingNameMLP, modeW);
+				fTestMLP=fopen(testNameMLP, modeW);
+				fValidationMLP=fopen(validationNameMLP, modeW);
+
+				if(fTrainingMLP!=NULL || fTestMLP!=NULL || fValidationMLP!=NULL){
+					printf("MLP File successfully opened for Writing!\n");
+					
+					for (int l = 0; l < 950; l++)
+					{	//Label
+						if((l<startValidation || l>=(startValidation+(nPositive+nNegative))) &&
+						(l<startValidation2 || l>=(startValidation2+(nPositive+nNegative)))){
+							fprintf(fTraining, "%d", kData[l][9]);
+							for (int j = 0; j < 9; j++)
+							{	
+								fprintf(fTrainingMLP, ",%d",kData[l][j]);
+							}
+							fprintf(fTrainingMLP, "\n");
+						}else if(l>=startValidation && l<(startValidation+(nPositive+nNegative))){
+							fprintf(fTestMLP, "%d", kData[l][9]);
+							for (int j = 0; j < 9; j++)
+							{	
+								fprintf(fTest, ",%d",kData[l][j]);
+							}
+							fprintf(fTestMLP, "\n");
+						}else{
+							fprintf(fValidationMLP, "%d", kData[l][9]);
+							for (int j = 0; j < 9; j++)
+							{	
+								fprintf(fValidationMLP, ",%d",kData[l][j]);
+							}
+							fprintf(fValidationMLP, "\n");
+						}
+					}
+
+				}else{
+					printf("The MLP file was not open!\n");
+				}
+				
+				fclose(fTrainingMLP);
+				fclose(fTestMLP);
+				fclose(fValidationMLP);
+
+
 				//Task 2: Naive Bayesian Classifier
 				meansTask2[cont]=task2(kData, startValidation,nPositive,nNegative,nTotal*nFold,nFold);
 				cont++;
 				//Updating trainingData and validationData
 				startValidation+=(nPositive+nNegative);
+				if(i<8){
+					startValidation2+=(nPositive+nNegative);
+				}else{
+					startValidation2=0;
+				}
+				
 			}
 		}
 		

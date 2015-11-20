@@ -100,14 +100,6 @@ int nAtributes=9;
 		}
 	}
 
-	// for (int i = 0; i < 958; ++i)
-	// {
-	// 	for (int j = 0; j < 958; ++j)
-	// 	{
-	// 		printf("%i ",dMatrix[i][j]);
-	// 	}
-	// 	printf("\n");
-	// }
 
 	//Clustering Algorithm
 	//Parameters
@@ -171,11 +163,6 @@ for(int l=0; l<100; l++){
 
 			memberDregree[i][j]=(1/sum0);
 		}
-		
-		//if(i<5){
-		//printf("%i -> u1= %f ",i, memberDregree[i][0]);
-		//printf("u2= %f\n", memberDregree[i][1]);
-		//}
 	}
 
 	//Calculating J
@@ -195,15 +182,6 @@ for(int l=0; l<100; l++){
 	}
 	printf("J= %f\n", J);
 
-
-	//Cleaning prototype
-	// for (int i = 0; i < k; i++)
-	// {
-	// 	for (int j = 0; j < q; j++)
-	// 	{
-	// 		proto[k][q]=-1;
-	// 	}
-	// }
 	
 	for (; (t < 150); t++) //Updating t
 	{
@@ -226,12 +204,6 @@ for(int l=0; l<100; l++){
 				}
 
 				qsort(allPrototypes, nObjects, 2*(sizeof(float)),cmpfunc);
-
-
-				//  for (int i = 0; i <5; ++i)
-				//  {
-				//	 printf("%f %i\n",allPrototypes[i][0], (int) allPrototypes[i][1]);
-				//  }
 
 				for (int i = 0; i < q; i++)
 				{
@@ -275,13 +247,6 @@ for(int l=0; l<100; l++){
 
 				memberDregree[i][j]=(1/sum0);
 			}
-
-
-			
-			// if(i<5){
-			// 	printf("%i -> u1= %f ",i, memberDregree[i][0]);
-			// 	printf("u2= %f\n", memberDregree[i][1]);
-			// }
 		}
 
 
@@ -318,12 +283,12 @@ for(int l=0; l<100; l++){
 	if(J<bestJ){
 		bestJ=J;
 		for (int i = 0; i < k; ++i)
-	{
-		for (int j = 0; j < q; ++j)
 		{
-			bestProto[i][j]=proto[i][j];
+			for (int j = 0; j < q; ++j)
+			{
+				bestProto[i][j]=proto[i][j];
+			}
 		}
-	}
 	}
 	
 	// int class[nObjects];
@@ -729,7 +694,7 @@ if(ifp!=NULL){
 }
 //////////////////////data structure uploaded//////////////////
 //Task 1
-	//task1(data);
+	task1(data);
 //Task 2
 	//task2(data);
 	//task2b(data);
@@ -860,49 +825,37 @@ int kFold=1;
 				fclose(fTraining);
 				fclose(fTest);
 
+				if(i==0){
 				//MLP input
 				char trainingNameMLP[1000];
-				sprintf(trainingNameMLP,"%s/data_kfold/MLP/%i/MLPtraining%i.csv",path,j,i);
-				char testNameMLP[1000];
-				sprintf(testNameMLP,"%s/data_kfold/MLP/%i/MLPtest%i.csv",path,j,i);
-				char validationNameMLP[1000];
-				sprintf(validationNameMLP,"%s/data_kfold/MLP/%i/MLPvalidation%i.csv",path,j,i);
+				sprintf(trainingNameMLP,"%s/data_kfold/MLP/MLP%i.csv",path,j);
+				
 
 				FILE *fTrainingMLP;
-				FILE *fTestMLP;
-				FILE *fValidationMLP;
+				
 				fTrainingMLP= fopen(trainingNameMLP, modeW);
-				fTestMLP=fopen(testNameMLP, modeW);
-				fValidationMLP=fopen(validationNameMLP, modeW);
+				
 
-				if(fTrainingMLP!=NULL || fTestMLP!=NULL || fValidationMLP!=NULL){
+				if(fTrainingMLP!=NULL){
 					printf("MLP File successfully opened for Writing!\n");
-					
+
 					for (int l = 0; l < 950; l++)
-					{	//Label
-						if((l<startValidation || l>=(startValidation+(nPositive+nNegative))) &&
-						(l<startValidation2 || l>=(startValidation2+(nPositive+nNegative)))){
-							fprintf(fTraining, "%d", kData[l][9]);
+					{
+							
 							for (int j = 0; j < 9; j++)
 							{	
-								fprintf(fTrainingMLP, ",%d",kData[l][j]);
+								fprintf(fTrainingMLP, "%d,",kData[l][j]);
+							}
+
+							if(kData[l][9]==2){
+								fprintf(fTrainingMLP, "%d,", 0);
+								fprintf(fTrainingMLP, "%d", 1);
+							}else{
+								fprintf(fTrainingMLP, "%d,", 1);
+								fprintf(fTrainingMLP, "%d", 0);
 							}
 							fprintf(fTrainingMLP, "\n");
-						}else if(l>=startValidation && l<(startValidation+(nPositive+nNegative))){
-							fprintf(fTestMLP, "%d", kData[l][9]);
-							for (int j = 0; j < 9; j++)
-							{	
-								fprintf(fTest, ",%d",kData[l][j]);
-							}
-							fprintf(fTestMLP, "\n");
-						}else{
-							fprintf(fValidationMLP, "%d", kData[l][9]);
-							for (int j = 0; j < 9; j++)
-							{	
-								fprintf(fValidationMLP, ",%d",kData[l][j]);
-							}
-							fprintf(fValidationMLP, "\n");
-						}
+						
 					}
 
 				}else{
@@ -910,9 +863,7 @@ int kFold=1;
 				}
 				
 				fclose(fTrainingMLP);
-				fclose(fTestMLP);
-				fclose(fValidationMLP);
-
+				}
 
 				//Task 2: Naive Bayesian Classifier
 				meansTask2[cont]=task2(kData, startValidation,nPositive,nNegative,nTotal*nFold,nFold);
@@ -928,7 +879,32 @@ int kFold=1;
 			}
 		}
 		
-		statistics(meansTask2,100);
+	//	statistics(meansTask2,100);
+
+
+	//Calculating Mean and Confidence interval of the MLP
+	//File variables
+	FILE *fileErrorMLP;
+	char *fileErrorMLPName="MATLAB/errorMLP.txt";	
+	fileErrorMLP= fopen(fileErrorMLPName, "r");
+	float errorMLP[100];
+
+	if(fileErrorMLPName!=NULL){
+		printf("File Error MLP successfully opened!\n");
+		for (int i = 0; i < 100; i++)
+		{
+			fscanf(fileErrorMLP,"%f",&errorMLP[i]);
+		}
+		
+	}else{
+		printf("Error MLP file was not open!\n");
+	}
+
+	statistics(errorMLP,100);
+
+
+
+
 	//	task2(kData, startValidation,nPositive,nNegative,nTotal*nFold,nFold);
 	
 

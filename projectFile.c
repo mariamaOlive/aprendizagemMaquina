@@ -500,8 +500,8 @@ for (int i = startValidation; i < (startValidation+tValidation); i++, k++)
 
 void task2b(int data[958][10]){
 
-int nObjects=5;
-int dMatrix[958][958]; // 713 o max
+int nObjects=5; //Do we use it???
+int dMatrix[958][958]; 
 int nAtributes=9;
 
 	//Dimilarity Matrix
@@ -532,7 +532,7 @@ int fin[958][3]; //Tabela de resultados
 
 for (p=0; p<958; p++)
 {
-    int res[v][4]; // Tabela que vai contender os v vinzinhos mais proximos
+    int res[v][4]; // Tabela que vai conter os v vinzinhos mais proximos
     printf("\n\n**** p = %d *** \n\n", p);
 
     //Initialization of
@@ -540,7 +540,7 @@ for (p=0; p<958; p++)
 
     for (i=0; i<v; i++)
     {
-        // Search for the first value posible
+        // Search for the first possible value
         int min =0;
         int r;
 
@@ -579,12 +579,12 @@ for (p=0; p<958; p++)
         {
             int ok=0;
 
-            // Verificação que o elemento j não ja apartene a tabela de resultados
+            // Verificação que o elemento j não ja pertence a tabela de resultados
             for (r=0; r<v; r++)
                 if (res[r][0]==j)
                     ok++;
 
-            // Si o elemento não esta na tabela de resultados
+            // Se o elemento não esta na tabela de resultados
             if (ok==0) {
                 if (dMatrix[j][p] <= dMatrix[min][p] && j != p)
                 {
@@ -694,7 +694,7 @@ if(ifp!=NULL){
 }
 //////////////////////data structure uploaded//////////////////
 //Task 1
-	task1(data);
+	//task1(data);
 //Task 2
 	//task2(data);
 	//task2b(data);
@@ -785,10 +785,10 @@ int kFold=1;
 				//SVM input
 				char trainingNameSVM[1000];
 				//Path to the project folder
-				sprintf(trainingNameSVM,"%s/data_kfold/SVM/%i/SVMtraining%i",path,j,i);
+				sprintf(trainingNameSVM,"%s/data_kfold/SVM/%i/SVMtraining%i.csv",path,j,i);
 				//printf("%s\n", trainingNameSVM);
 				char testNameSVM[1000];
-				sprintf(testNameSVM,"%s/data_kfold/SVM/%i/SVMtest%i",path,j,i);
+				sprintf(testNameSVM,"%s/data_kfold/SVM/%i/SVMtest%i.csv",path,j,i);
 				char *modeW="w";
 
 				FILE *fTraining;
@@ -802,18 +802,20 @@ int kFold=1;
 					for (int l = 0; l < 950; l++)
 					{	//Label
 						if(l<startValidation || l>=(startValidation+(nPositive+nNegative))){
-							fprintf(fTraining, "%d", kData[l][9]);
+							
 							for (int j = 0; j < 9; j++)
 							{	
-								fprintf(fTraining, " %d:%d",(j),kData[l][j]);
+								fprintf(fTraining, "%d,",kData[l][j]);
 							}
+							fprintf(fTraining, "%d", kData[l][9]);
 							fprintf(fTraining, "\n");
 						}else{
-							fprintf(fTest, "%d", kData[l][9]);
+							
 							for (int j = 0; j < 9; j++)
 							{	
-								fprintf(fTest, " %d:%d",(j),kData[l][j]);
+								fprintf(fTest, "%d,",kData[l][j]);
 							}
+							fprintf(fTest, "%d", kData[l][9]);
 							fprintf(fTest, "\n");
 						}
 					}

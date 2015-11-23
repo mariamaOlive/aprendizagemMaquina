@@ -5,6 +5,18 @@
 
 
 //Auxiliary functions
+long double fat(long double n){
+	if(n==0){
+		return 1;
+	}
+
+	return fat(n-1)*n;
+}
+
+long double comb(int n, int k){
+	return fat((long double)n)/(fat((long double)k)*fat((long double)n-(long double)k));
+}
+
 //Comparte two elements
 int cmpfunc (const void * a, const void * b)
 {
@@ -76,7 +88,7 @@ void statistics(float sample[], int sampleSize){
 //Task1
 void task1(int data[958][10]){
 
-
+float totalU[100][958][2];
 int nObjects=958;
 int dMatrix[958][958]; 
 int nAtributes=9;
@@ -113,105 +125,25 @@ int nAtributes=9;
 	int proto[k][q];
 
 	float bestJ=100000000;
+	int bestJIndex=1;
 	float J, J1;
 	int bestProto[k][q];
 
-for(int l=0; l<100; l++){
-	srand(time(NULL));
-	//Selecting prototypes
-	for (int i = 0; i < k; i++)
-	{
-		for (int j = 0; j < q; j++)
+	for(int l=0; l<3; l++){
+		srand(time(NULL));
+		//Selecting prototypes
+		for (int i = 0; i < k; i++)
 		{
-			int selected = rand()%(nObjects-1);
-			proto[i][j]=selected;
-			printf("selected: %i\n", proto[i][j]);
-		}
-		
-	}
-
-	float memberDregree[nObjects][k];
-
-	for (int i = 0; i < nObjects; i++)
-	{
-		for (int j = 0; j < k; j++)
-		{
-			float sum0=0;
-			for (int p = 0;  p< k; p++)
+			for (int j = 0; j < q; j++)
 			{
-					float sum1=0;
-					float sum2=0;
-					float sum3=0;
-
-					for (int r = 0; r< q; r++)
-					{
-						//if(i!=proto[p][r]){
-							sum2+=dMatrix[i][proto[j][r]];
-							sum3+=dMatrix[i][proto[p][r]];
-						//}else{
-						//	sum2=1;
-						//	sum3=1;
-						//}
-					}
-
-					sum1=sum2/sum3;
-
-					sum1=pow(sum1, (1/(m-1)));
-
-					sum0+=sum1;
+				int selected = rand()%(nObjects-1);
+				proto[i][j]=selected;
 			}
-
-			memberDregree[i][j]=(1/sum0);
+			
 		}
-	}
 
-	//Calculating J
-	J=0;
-	for (int i = 0; i < k; i++)
-	{
-		for (int j = 0; j < nObjects; j++)
-		{	
-			float sumQ=0;
-			for (int n = 0; n < q; n++)
-			{
-				sumQ+=dMatrix[j][proto[i][n]];
-			}
+		float memberDregree[nObjects][k];
 
-			J+= pow(memberDregree[j][i],m)*sumQ;
-		}
-	}
-	printf("J= %f\n", J);
-
-	
-	for (; (t < 150); t++) //Updating t
-	{
-	
-		//Choosing again the prototypes
-		 for (int r = 0; r < k; r++)
-		 {
-			float allPrototypes [nObjects][2];
-				
-				for (int j = 0; j < nObjects; j++) //=> h
-				{
-					float arg=0;
-					for (int s = 0; s < nObjects; s++) //=> i
-					{
-						arg+= pow(memberDregree[s][r],m)*dMatrix[s][j];
-					}
-
-					allPrototypes[j][0]=arg;
-					allPrototypes[j][1]=j;
-				}
-
-				qsort(allPrototypes, nObjects, 2*(sizeof(float)),cmpfunc);
-
-				for (int i = 0; i < q; i++)
-				{
-					proto[r][i]=(int)allPrototypes[i][1];
-					printf("selected: %i\n",proto[r][i]);
-				}
-		}
-	
 		for (int i = 0; i < nObjects; i++)
 		{
 			for (int j = 0; j < k; j++)
@@ -219,10 +151,6 @@ for(int l=0; l<100; l++){
 				float sum0=0;
 				for (int p = 0;  p< k; p++)
 				{
-					// printf("%i,%i,%i\n",i,j,p);
-					// printf("i:%i, p:%i\n",i, proto[p] );
-					// printf("dis=>%i\n",dMatrix[i][proto[p]]);
-
 						float sum1=0;
 						float sum2=0;
 						float sum3=0;
@@ -232,10 +160,10 @@ for(int l=0; l<100; l++){
 							//if(i!=proto[p][r]){
 								sum2+=dMatrix[i][proto[j][r]];
 								sum3+=dMatrix[i][proto[p][r]];
-							// }else{
-							// 	sum2=1;
-							// 	sum3=1;
-							// }
+							//}else{
+							//	sum2=1;
+							//	sum3=1;
+							//}
 						}
 
 						sum1=sum2/sum3;
@@ -249,9 +177,8 @@ for(int l=0; l<100; l++){
 			}
 		}
 
-
 		//Calculating J
-		J1=0;
+		J=0;
 		for (int i = 0; i < k; i++)
 		{
 			for (int j = 0; j < nObjects; j++)
@@ -262,65 +189,130 @@ for(int l=0; l<100; l++){
 					sumQ+=dMatrix[j][proto[i][n]];
 				}
 
-				J1+= pow(memberDregree[j][i],m)*sumQ;
+				J+= pow(memberDregree[j][i],m)*sumQ;
 			}
-
 		}
 
-		printf("e= %f\n", fabs(J1-J));
-		printf("J= %f\n", J1);
-
-		//Comparing J(t) with J(t-1)
-		if(fabs(J1-J)<=e){
-
-			break;
-		}
-
-		J=J1;
 		
-	}
-
-	if(J<bestJ){
-		bestJ=J;
-		for (int i = 0; i < k; ++i)
+		for (; (t < 150); t++) //Updating t
 		{
-			for (int j = 0; j < q; ++j)
+		
+			//Choosing again the prototypes
+			 for (int r = 0; r < k; r++)
+			 {
+				float allPrototypes [nObjects][2];
+					
+					for (int j = 0; j < nObjects; j++) //=> h
+					{
+						float arg=0;
+						for (int s = 0; s < nObjects; s++) //=> i
+						{
+							arg+= pow(memberDregree[s][r],m)*dMatrix[s][j];
+						}
+
+						allPrototypes[j][0]=arg;
+						allPrototypes[j][1]=j;
+					}
+
+					qsort(allPrototypes, nObjects, 2*(sizeof(float)),cmpfunc);
+
+					for (int i = 0; i < q; i++)
+					{
+						proto[r][i]=(int)allPrototypes[i][1];
+					}
+			}
+		
+			for (int i = 0; i < nObjects; i++)
 			{
-				bestProto[i][j]=proto[i][j];
+				for (int j = 0; j < k; j++)
+				{
+					float sum0=0;
+					for (int p = 0;  p< k; p++)
+					{
+						// printf("%i,%i,%i\n",i,j,p);
+						// printf("i:%i, p:%i\n",i, proto[p] );
+						// printf("dis=>%i\n",dMatrix[i][proto[p]]);
+
+							float sum1=0;
+							float sum2=0;
+							float sum3=0;
+
+							for (int r = 0; r< q; r++)
+							{
+								//if(i!=proto[p][r]){
+									sum2+=dMatrix[i][proto[j][r]];
+									sum3+=dMatrix[i][proto[p][r]];
+								// }else{
+								// 	sum2=1;
+								// 	sum3=1;
+								// }
+							}
+
+							sum1=sum2/sum3;
+
+							sum1=pow(sum1, (1/(m-1)));
+
+							sum0+=sum1;
+					}
+
+					memberDregree[i][j]=(1/sum0);
+				}
+			}
+
+
+			//Calculating J
+			J1=0;
+			for (int i = 0; i < k; i++)
+			{
+				for (int j = 0; j < nObjects; j++)
+				{	
+					float sumQ=0;
+					for (int n = 0; n < q; n++)
+					{
+						sumQ+=dMatrix[j][proto[i][n]];
+					}
+
+					J1+= pow(memberDregree[j][i],m)*sumQ;
+				}
+
+			}
+
+
+			//TotalU= all membership matrix 
+			for (int i = 0; i < nObjects; i++)
+			{
+				for (int j = 0; j < k; j++)
+				{
+					totalU[l][i][j]=memberDregree[i][j];
+				}
+			}
+
+			//Comparing J(t) with J(t-1)
+			if(fabs(J1-J)<=e){
+
+				break;
+			}
+
+			J=J1;
+			
+		}
+
+		//Gets minimum J 
+		if(J<bestJ){
+			bestJ=J;
+			bestJIndex=l;
+			for (int i = 0; i < k; ++i)
+			{
+				for (int j = 0; j < q; ++j)
+				{
+					bestProto[i][j]=proto[i][j];
+				}
 			}
 		}
 	}
-	
-	// int class[nObjects];
-	// int numberErrors=0;
 
-
-	// for (int i = 0; i < nObjects; i++)
-	// {
-	// //printf("%i -> u1= %f ",i, memberDregree[i][0]);
-	// //printf("u2= %f\n", memberDregree[i][1]);
-
-	// 	if(memberDregree[i][0]>memberDregree[i][1]){
-	// 		class[i]=1;
-	// 	}else{
-	// 		class[i]=2;
-	// 	}
-	// }
-
-	// for (int i = 0; i < nObjects; i++)
-	// {
-	// 	if(class[i]!=data[i][9]){
-	// 		numberErrors++;
-	// 	}
-	// }
-
-	
-
-	
-	//printf("Porcentagem de Erro= %f\n", ((float)numberErrors/(float)nObjects));
-}
-
-printf("bestJ= %f\n", bestJ);
+	printf("bestJ= %f\n", bestJ);
+	printf("bestJIndex= %i\n", bestJIndex);
 	for (int i = 0; i < k; ++i)
 	{
 		for (int j = 0; j < q; ++j)
@@ -328,6 +320,119 @@ printf("bestJ= %f\n", bestJ);
 			printf("%i\n",bestProto[i][j] );
 		}
 	}
+
+	printf("Melhor Particao= %d\n", bestJIndex);
+	for (int i = 0; i < 958; ++i)
+	{
+		for (int j = 0; j <2; ++j)
+		{
+			printf("%f ", totalU[bestJIndex][i][j]);
+		}
+		printf("\n");
+
+	}
+
+	//Dada a melhor partição Fuzzy gerar partição Hard 
+	int class1[nObjects];
+	int class2[nObjects];
+	int* classFinal;
+	int numberErrors1=0;
+	int numberErrors2=0;
+
+	//Class1 -> class 1 | class 2
+	//Class2 -> class 2 | class 1
+		for (int i = 0; i < nObjects; i++)
+		{
+			if(totalU[bestJIndex][i][0]>totalU[bestJIndex][i][1]){
+				class1[i]=1;
+				class2[i]=2;
+			}else{
+				class1[i]=2;
+				class2[i]=1;
+			}
+		}
+
+		for (int i = 0; i < nObjects; i++)
+		{
+			if(class1[i]!=data[i][9]){
+				numberErrors1++;
+			}
+			if(class2[i]!=data[i][9]){
+				numberErrors2++;
+			}
+		}
+
+		//Escolher a partição Hard que apresenta menor erro de classificação
+
+		if(numberErrors1<numberErrors2){
+			classFinal=class1;
+			printf("Porcentagem de Erro= %f\n", ((float)numberErrors1/(float)nObjects));
+			for (int i = 0; i < k; ++i)
+			{
+				printf("Medoids da classe%i\n", i+1);
+				for (int j = 0; j < q; ++j)
+				{
+					printf("%i\n", bestProto[i][j]);
+				}
+			}
+		}else{
+			classFinal=class2;
+			printf("Porcentagem de Erro= %f\n", ((float)numberErrors2/(float)nObjects));
+			for (int i = k; i >0; --i)
+			{
+				printf("Medoids da classe%i\n", i);
+				for (int j = 0; j < q; ++j)
+				{
+					printf("%i\n", bestProto[i-1][j]);
+				}
+			}
+		}
+
+		for (int i = 0; i < nObjects; ++i)
+		{
+			printf("%i\n",classFinal[i]);
+		}
+
+
+	//Indice de Rand Corrigido
+	int n12=0;
+	int n21=0;
+	int n11=0;
+	int n22=0;
+	int u1=0;
+	int u2=0;
+	int v1=626;
+	int v2=332;
+
+
+	for (int i = 0; i < nObjects; i++)
+	{
+		if(data[i][9]==1 && classFinal[i]==1){
+			u1++;
+			n11++;
+		}else if(data[i][9]==2 && classFinal[i]==2){
+			u2++;
+			n22++;
+		}else if(data[i][9]==1 && classFinal[i]==2){
+			u2++;
+			n12++;
+		}else if(data[i][9]==2 && classFinal[i]==1){
+			u1++;
+			n21++;
+		}
+	}
+
+
+	long double num=(comb(n11,2)+comb(n12,2)+comb(n21,2)+comb(n22,2)-pow((comb(nObjects,2)),2)-(1/comb(nObjects,2))*(comb(u1,2)+comb(u2,2))*(comb(v1,2)+comb(v2,2)));
+
+	printf("%Lf\n",num);
+	long double quo=((((comb(u1,2)+comb(u2,2))+(comb(v1,2)+comb(v2,2)))/2)-(1/comb(nObjects,2))*(comb(u1,2)+comb(u2,2))*(comb(v1,2)+comb(v2,2)));
+
+	printf("%Lf\n",quo);
+	long double CR= num/quo;
+	printf("%Lf\n", CR);
+			  
+
 }
 
 
@@ -475,41 +580,22 @@ for (int i = startValidation; i < (startValidation+tValidation); i++, k++)
 	}
 }
 
-	// for (int i = 0; i <1; ++i)
-	// {
-	// 	for (int j = 0; j < nAtributes; ++j)
-	// 	{
-	// 		printf("p= %f ", w1[i][j][0]);
-	// 		printf("q= %f ", w1[i][j][1]);
-	// 		printf("r= %f\n", w1[i][j][2]);
-	// 	}
-
-	// }
-
-	//Mean 
-
-	//Variance
-
-	//Confidence interval
-	// printf("correctly classified %i\n",right);
-	// printf("wrongly classified %i\n",wrong);
-	// printf("\n");
-
 	return ((float)wrong/(float)tValidation)*100; //returns the percentage of wrongly classified
 }
 
-void task2b(int data[958][10]){
+float task2b(int data[950][10], int startValidation, int nPositive, int nNegative, int nTotal, int nFold){
 
-int nObjects=5; //Do we use it???
-int dMatrix[958][958]; 
-int nAtributes=9;
+	int nObjects=950;
+	int dMatrix[950][950]; // 713 o max
+	int nAtributes=9;
+	int tValidation= nPositive+nNegative;
 
 	//Dimilarity Matrix
 	int i;
-	for (i = 0; i < 958; i++)
+	for (i = 0; i < nObjects; i++)
 	{
         int j;
-		for (j = i; j < 958; ++j)
+		for (j = i; j < nObjects; ++j)
 		{
 			int cont=0;
             int k;
@@ -520,106 +606,140 @@ int nAtributes=9;
 				}
 			}
 			dMatrix[i][j]=cont;
-			printf("Dissimilarity between i:%d and j:%d = %d\n",i, j, dMatrix[i][j]);
+			//printf("Dissimilarity between i:%d and j:%d = %d\n",i, j, dMatrix[i][j]);
 			dMatrix[j][i]=cont;
 		}
-		printf("\n");
+		//printf("\n");
 	}
 
-int v=10; //Numero de vizinhos
-int p; //Xp where p in [1..n]
-int fin[958][3]; //Tabela de resultados
+	int v=10; //Numero de vizinhos
+	int p; //Xp where p in [1..n]
+	int ClasseKnn[nObjects]; //Tabela de resultados
+	int Errors=0; //Contagem de error entre classificação a priori e com a método do k-NN vizinhos
 
-for (p=0; p<958; p++)
-{
-    int res[v][4]; // Tabela que vai conter os v vinzinhos mais proximos
-    printf("\n\n**** p = %d *** \n\n", p);
+	 int res[v][4];
 
-    //Initialization of
-    for (i=0; i<v;  i++) res[i][0]=-1;
+	for (p=startValidation; p<(startValidation+tValidation); p++)
+	{
+	    // Tabela que vai contender os v vinzinhos mais proximos de Xp
+	    //printf("\n\n**** p = %d *** \n\n", p);
 
-    for (i=0; i<v; i++)
-    {
-        // Search for the first possible value
-        int min =0;
-        int r;
+	    //Initialização da tabela dos vizinhos para Xp.
+	    for (i=0; i<v;  i++) res[i][0]=-1;
 
-        int ok1=1;
-        int ok2=1;
-            while ((ok1 != 0) && (ok2!=0))
-            {
-                if (p==min)
-                {
-                    if (min == 99)
-                        min = 0;
-                    else min++;
-                    ok1=0;
-                }
-                else
-                    ok1=0;
+	    srand(time(NULL));
+	    for (i=0; i<v; i++)
+	    {
+	        // Search for the first value posible
+	        int min = rand()%(nObjects-1);
+	        int r;
 
-                for (r=0; r<v; r++)
-                {
-                    if (min==res[r][0])
-                    {
-                        if (min == 99)
-                            min = 0;
-                        else min++;
-                        ok2=1;
-                        ok1=1;
-                    }
-                }
-            }
-         
-        printf("Initial minimum is: %d\n", min);
+	        int ok1=1;
+	        int ok2=1;
+	            while ((ok1 != 0) && (ok2!=0))
+	            {
+	                if (p==min)
+	                {
+	                    if (min == nObjects-1)
+	                        min = 0;
+	                    else min++;
+	                    ok1=0;
+	                }
+	                else
+	                    ok1=0;
 
-        int j;
-        // Searching for the max dissimilarity between xp and the others x
-        for (j=0; j<958; j++)
-        {
-            int ok=0;
+	                for (r=0; r<v; r++)
+	                {
+	                    if (min==res[r][0])
+	                    {
+	                        if (min == nObjects-1)
+	                            min = 0;
+	                        else min++;
+	                        ok2=1;
+	                        ok1=1;
+	                    }
+	                }
+	            }
 
-            // Verificação que o elemento j não ja pertence a tabela de resultados
-            for (r=0; r<v; r++)
-                if (res[r][0]==j)
-                    ok++;
+	        // Searching for the max dissimilarity between Xp and the others x
+	        int usado[nObjects];
+	        int b=0;
 
-            // Se o elemento não esta na tabela de resultados
-            if (ok==0) {
-                if (dMatrix[j][p] <= dMatrix[min][p] && j != p)
-                {
-                    min=j;
-                }
-            }
+	        // Aleatory way to choose the X to be compared with Xp.
+	        while (b<nObjects)
+	        {
+	            int selected = rand()%(nObjects-1);
+	            int r;
+	            int ok3=1;
 
-        }
+	            //Verification that the chosen value was not already compared.
+	            while ((ok3!=0))
+	            {
+	                ok3=0;
+	                for (r=0; r<b; r++)
+	                {
+	                    if (selected==usado[r])
+	                    {
+	                        if (selected == nObjects-1)
+	                            selected= 0;
+	                        else selected++;
+	                        ok3=1;
+	                        break;
+	                    }
+	                }
+	            }
+	            usado[b]=selected;
 
-        res[i][0]=min; //Saving of the indice
-        res[i][1]=data[min][9]; //Saving of the class of the indice
+	            int verif=0;
 
-        printf("Min = %d | Dissimilarity = %d | vinzinhos mais proximo numero %d  | classe = %d\n", res[i][0],dMatrix[min][p], i, res[i][1]);
-    }
+	            // Verificação que o elemento j não ja apartene a tabela de resultados
+	            for (r=0; r<v; r++)
+	                if (res[r][0]==selected)
+	                {
+	                    verif++;
+	                    break;
+	                }
 
-    //Counting of the results
-    int count1=0, count2=0;
+	            // Si o elemento não esta na tabela de resultados
+	            if (verif==0) {
+	                if (dMatrix[selected][p] <+ dMatrix[min][p] && selected != p)
+	                {
+	                    min=selected;
+	                }
+	            }
+	            b++;
+	        }
 
-    for (i=0; i<v; i++)
-        if (res[i][1]==1)
-            count1++;
-        else
-            count2++;
+	        res[i][0]=min; //Saving of the indice
+	        res[i][1]=data[min][9]; //Saving of the class of the indice
 
-    printf("count1=%d, count2=%d \n", count1, count2);
+	        //printf("Min = %d | Dissimilarity = %d | vinzinhos mais proximo numero %d  | classe = %d\n", res[i][0],dMatrix[min][p], i, res[i][1]);
+	    }
 
-    fin[p][1]=count1/v;
-    fin[p][2]=count2/v;
+	    //Counting of results
+	    int count1=0, count2=0;
 
-    if (count1>count2)
-        fin[p][0]=1;
-    else fin[p][0]=2;
+	    for (i=0; i<v; i++)
+	        if (res[i][1]==1)
+	            count1++;
+	        else
+	            count2++;
 
-    printf("p=%d dans la classe %d", p, fin[p][0]);
-}
+	   // printf("count1=%d, count2=%d \n", count1, count2);
+
+	    if (count1>count2)
+	        ClasseKnn[p]=1;
+	    else ClasseKnn[p]=2;
+
+	  //  printf("p=%d na classe %d", p, ClasseKnn[p]);
+
+	    if (ClasseKnn[p]!=data[p][9])
+	        Errors++;
+	}
+
+printf("Percentage of errors between classification K-NN and classification a priori = %f\n", (float)Errors/(float)tValidation);
+
+	return Errors/nObjects;
 }
 
 
@@ -695,12 +815,8 @@ if(ifp!=NULL){
 //////////////////////data structure uploaded//////////////////
 //Task 1
 	//task1(data);
+
 //Task 2
-	//task2(data);
-	//task2b(data);
-
-
-int kFold=1;
 
 //Tasks
 /*Algorithm:
@@ -737,6 +853,7 @@ int kFold=1;
 
 		int executeKFold=10;
 		float meansTask2 [100];
+		float meansTask2b[100];
 		int cont=0;
 
 		//Execute k-fold 10x... in the end we are going to have 100 samples
@@ -869,7 +986,11 @@ int kFold=1;
 
 				//Task 2: Naive Bayesian Classifier
 				meansTask2[cont]=task2(kData, startValidation,nPositive,nNegative,nTotal*nFold,nFold);
+				//Task 2b: KNN
+				meansTask2b[cont]=task2b(kData, startValidation,nPositive,nNegative,nTotal*nFold,nFold);
+				
 				cont++;
+				
 				//Updating trainingData and validationData
 				startValidation+=(nPositive+nNegative);
 				if(i<8){
@@ -881,28 +1002,48 @@ int kFold=1;
 			}
 		}
 		
-	//	statistics(meansTask2,100);
+	
 
 
-	//Calculating Mean and Confidence interval of the MLP
-	//File variables
-	FILE *fileErrorMLP;
-	char *fileErrorMLPName="MATLAB/errorMLP.txt";	
-	fileErrorMLP= fopen(fileErrorMLPName, "r");
-	float errorMLP[100];
+//File variables
+	// FILE *fileErrorMLP;
+	// char *fileErrorMLPName="MATLAB/errorMLP.txt";	
+	// fileErrorMLP= fopen(fileErrorMLPName, "r");
+	// float errorMLP[100];
 
-	if(fileErrorMLPName!=NULL){
-		printf("File Error MLP successfully opened!\n");
-		for (int i = 0; i < 100; i++)
-		{
-			fscanf(fileErrorMLP,"%f",&errorMLP[i]);
-		}
+	// if(fileErrorMLPName!=NULL){
+	// 	printf("File Error MLP successfully opened!\n");
+	// 	for (int i = 0; i < 100; i++)
+	// 	{
+	// 		fscanf(fileErrorMLP,"%f",&errorMLP[i]);
+	// 	}
 		
-	}else{
-		printf("Error MLP file was not open!\n");
-	}
+	// }else{
+	// 	printf("Error MLP file was not open!\n");
+	// }
 
-	statistics(errorMLP,100);
+	// FILE *fileErrorSVM;
+	// char *fileErrorSVMName="libsvm-3.20/matlab/errorMLP.txt";	
+	// fileErrorSVM= fopen(fileErrorSVMName, "r");
+	// float errorSVM[100];
+
+	// if(fileErrorSVMName!=NULL){
+	// 	printf("File Error MLP successfully opened!\n");
+	// 	for (int i = 0; i < 100; i++)
+	// 	{
+	// 		fscanf(fileErrorSVM,"%f",&errorSVM[i]);
+	// 	}
+		
+	// }else{
+	// 	printf("Error MLP file was not open!\n");
+	// }
+
+	// ///////////////////////////STATISTICS//////////////////////////////
+	// //Calculating Mean and Confidence interval of the MLP
+	// statistics(meansTask2,100);
+	// //statistics(meansTask2b,100);
+	// statistics(errorMLP,100);
+	// statistics(errorSVM,100);
 
 
 
@@ -919,8 +1060,6 @@ int kFold=1;
 		// 	}
 		// 	printf("\n");
 		// }
-	
-
 
 return 0;
 }

@@ -451,6 +451,9 @@ int nAtributes=9;
 //change the return of the task after the function is complete
 float task2(int data[950][10], int startValidation, int nPositive, int nNegative, int nTotal, int nFold){
 
+	FILE *bayesFile;
+	bayesFile= fopen("posterioriBayes", "w");
+
 	float w1 [1][9][3];
 	float w2 [1][9][3];
 
@@ -482,11 +485,6 @@ float task2(int data[950][10], int startValidation, int nPositive, int nNegative
 				cont++;
 			}
 		}
-
-		// printf("SumP= %f\n", sumP);
-		// printf("SumQ= %f\n", sumQ);
-		// printf("SumR= %f\n", sumR);
-
 
 		w1[0][j][0]=(1.0/(float)nW1)*sumP;
 		w1[0][j][1]=(1.0/(float)nW1)*sumQ;
@@ -552,23 +550,16 @@ float task2(int data[950][10], int startValidation, int nPositive, int nNegative
 				pow(w2[0][j][2],(data[i][j]*(data[i][j]-1)/2)));
 
 		}
-		
-		//printf("w2= %f\n",cW1);
-		//printf("w2= %f\n",cW2);
-
-
-
+	
 	/* Probability a priori */
 		float pW[2] = {(626.0/958.0), (332.0/958.0)}; //A gente tem que colocar essa probabilidade de acordo com o k-fold
 
 		/*Calculating probabilities a posteriori */
-		//float pProbability[2][958];
 		float pProbability1 = (cW1 * pW[0]) / ( (cW1 * pW[0]) + (cW2 * pW[1]));
 		float pProbability2 = (cW2 * pW[1]) / ( (cW1 * pW[0]) + (cW2 * pW[1]));
-		
 
-		//printf("Probability of w1 having x%d = %f \n", k, pProbability1);
-		//printf("Probability of w2 having x%d = %f \n", k, pProbability2);
+		fprintf(bayesFile, "%f %f\n",pProbability1, pProbability2);
+		
 
 	    if (pProbability1 >= pProbability2)
 	    {
@@ -587,10 +578,15 @@ float task2(int data[950][10], int startValidation, int nPositive, int nNegative
 		}
 	}
 
+	fclose(bayesFile);
+
 	return ((float)wrong/(float)tValidation)*100; //returns the percentage of wrongly classified
 }
 
 float task2b(int data[950][10], int startValidation, int nPositive, int nNegative, int nTotal, int nFold){
+
+	FILE *knnFile;
+	knnFile= fopen("posterioriKNN", "w");
 
 	int nObjects=950;
 	int dMatrix[950][950]; 
@@ -739,8 +735,10 @@ float task2b(int data[950][10], int startValidation, int nPositive, int nNegativ
 	    else ClasseKnn[p]=2;
 
 	    //Posteriori probability
-	    float P1=count1/v;
-	    float P2=count2/v;
+	    float P1=(float)count1/(float)v;
+	    float P2=(float)count2/(float)v;
+
+	    fprintf(knnFile, "%f %f\n",P1, P2);
 
 	  //  printf("p=%d na classe %d", p, ClasseKnn[p]);
 
@@ -748,287 +746,48 @@ float task2b(int data[950][10], int startValidation, int nPositive, int nNegativ
 	        Errors++;
 	}
 
+	fclose(knnFile);
 	//printf("Percentage of errors between classification K-NN and real classification = %f\n", (float)Errors/(float)tValidation);
 
 	return (float)Errors/(float)tValidation;
 }
 
 
-float task2SumRule(){
+float task2SumRule(int data[950][10], int startValidation, int nPositive, int nNegative, int nTotal, int nFold){
+	
+	FILE *knnFile;
+	knnFile= fopen("posterioriKNN", "r");
+	FILE *bayesFile;
+	bayesFile= fopen("posterioriBayes", "r");
+	int tValidation= nPositive+nNegative;
+
+
+	//Sum rule applied here after all posteriori probability of test set have been calculated
+	int L=2; //number of classifiers
+	float prioriP1=0.653;
+	float prioriP2=0.347;
+	int finalClass[958];
+	int nErrors=0;
+
+
+	if(knnFile!=NULL &&  bayesFile!=NULL){
 	
 	float postBayes[958][2];
 	float postKNN [958][2];
 
-
-	float w1 [1][9][3];
-	float w2 [1][9][3];
-
-	//Calculating conditional probability p,q,r
-
-	int nW1=(nPositive*nFold)-nPositive;
-	int nW2=(nNegative*nFold)-nNegative;
-	int nSample=nW1+nW2;
-	int nAtributes=9;
-
-	//calculating the probability of class1
-	for (int j = 0;  j< nAtributes; j++)
+	for (int i = startValidation; i < (startValidation+tValidation); i++)
 	{
-		//Calculating parameters p,q,r
-		float sumP=0;
-		float sumQ=0;
-		float sumR=0;
-
-		int cont=0;
-
-		for (int p = 0; p < nTotal; p++)
-		{ 
-			//Only calculates values relative to class 1 and skips validation folder
-			if((data[p][9])==1 && (p<startValidation || p>=(startValidation+(nPositive+nNegative))))
-			{
-				sumP+= data[p][j]*(data[p][j]+1)/2;
-				sumQ+= (1-((data[p][j])*(data[p][j])));
-				sumR+= data[p][j]*(data[p][j]-1)/2;
-				cont++;
-			}
-		}
-
-		w1[0][j][0]=(1.0/(float)nW1)*sumP;
-		w1[0][j][1]=(1.0/(float)nW1)*sumQ;
-		w1[0][j][2]=(1.0/(float)nW1)*sumR;
+		fscanf(bayesFile,"%f",&postBayes[i][0]);
+		fscanf(bayesFile,"%f",&postBayes[i][1]);
+		fscanf(knnFile,"%f",&postKNN[i][0]);
+		fscanf(knnFile,"%f",&postKNN[i][1]);
 	}
 
-
-	//calculating the probability of class 2
-
-	for (int j = 0;  j< nAtributes; j++)
+	for (int i = startValidation; i < (startValidation+tValidation); i++)
 	{
-		//Calculating parameters p,q,r
-		float sumP=0;
-		float sumQ=0;
-		float sumR=0;
-		
-		for (int p = 0; p < nTotal; p++)
-		{ 
-			//Only calculates values relative to class 2 and skips validation folder
-			if((data[p][9])==2 && (p<startValidation || p>=(startValidation+(nPositive+nNegative))))
-			{
-				sumP+= data[p][j]*(data[p][j]+1)/2;
-				sumQ+= (1-((data[p][j])*(data[p][j])));
-				sumR+= data[p][j]*(data[p][j]-1)/2;
-			}
-		}
-
-		w2[0][j][0]=(1.0/(float)nW2)*sumP;
-		w2[0][j][1]=(1.0/(float)nW2)*sumQ;
-		w2[0][j][2]=(1.0/(float)nW2)*sumR;
+		printf("%f %f\n",postBayes[i][0],postBayes[i][1]);
 	}
 
-	//Checking the value found with the validation set
-	//Calculating Evidence of both classes (P|wj)
-	float a=0;
-	float b=0;
-	int tValidation= nPositive+nNegative;
-	float cProbaility[tValidation][2];
-
-	int k=0;
-	int right=0;
-	int wrong=0;
-	int Clasificador [tValidation];
-	for (int i = startValidation; i < (startValidation+tValidation); i++, k++)
-	{
-		float cW1=1;
-		
-		//Case: P(X|w1)
-		for (int j = 0; j < nAtributes; j++)
-		{
-			cW1=cW1*(pow(w1[0][j][0],(data[i][j]*(data[i][j]+1)/2))*
-				pow(w1[0][j][1],(1-((data[i][j])*(data[i][j]))))*
-				pow(w1[0][j][2],(data[i][j]*(data[i][j]-1)/2)));
-		}
-
-		float cW2=1;
-		//Case: P(X|w2)
-		for (int j = 0; j < nAtributes; j++)
-		{
-			cW2=cW2*(pow(w2[0][j][0],(data[i][j]*(data[i][j]+1)/2))*
-				pow(w2[0][j][1],(1-((data[i][j])*(data[i][j]))))*
-				pow(w2[0][j][2],(data[i][j]*(data[i][j]-1)/2)));
-
-		}
-	
-		/* Probability a priori */
-		float pW[2] = {(626.0/958.0), (332.0/958.0)}; //A gente tem que colocar essa probabilidade de acordo com o k-fold
-
-		/*Calculating probabilities a posteriori */
-		float pProbability1 = (cW1 * pW[0]) / ( (cW1 * pW[0]) + (cW2 * pW[1]));
-		float pProbability2 = (cW2 * pW[1]) / ( (cW1 * pW[0]) + (cW2 * pW[1]));
-		
-	  	postBayes[i][0]=pProbability1;
-	  	postBayes[i][1]=pProbability2;
-	}
-
- 	/////////////////////////////////////////////
-	int nObjects=950;
-	int dMatrix[950][950]; 
-
-	//Dimilarity Matrix
-	int i;
-	for (i = 0; i < nObjects; i++)
-	{
-        int j;
-		for (j = i; j < nObjects; ++j)
-		{
-			int cont=0;
-            int k;
-			for (k = 0; k < nAtributes; k++)
-			{
-				if(data[i][k]!=data[j][k]){
-					cont++;
-				}
-			}
-			dMatrix[i][j]=cont;
-			dMatrix[j][i]=cont;
-		}
-	}
-
-	int v=10; //Numero de vizinhos
-	int p; //Xp where p in [1..n]
-	int ClasseKnn[nObjects]; //Tabela de resultados
-	int Errors=0; //Contagem de error entre classificação a priori e com a método do k-NN vizinhos
-
-	 int res[v][4];
-
-	for (p=startValidation; p<(startValidation+tValidation); p++)
-	{
-	    // Tabela que vai contender os v vinzinhos mais proximos de Xp
-	    //printf("\n\n**** p = %d *** \n\n", p);
-
-	    //Initialização da tabela dos vizinhos para Xp.
-	    for (i=0; i<v;  i++) res[i][0]=-1;
-
-	    srand(time(NULL));
-	    for (i=0; i<v; i++)
-	    {
-	        // Search for the first value posible
-	        int min = rand()%(nObjects-1);
-	        int r;
-
-	        int ok1=1;
-	        int ok2=1;
-	            while ((ok1 != 0) && (ok2!=0))
-	            {
-	                if (p==min)
-	                {
-	                    if (min == nObjects-1)
-	                        min = 0;
-	                    else min++;
-	                    ok1=0;
-	                }
-	                else
-	                    ok1=0;
-
-	                for (r=0; r<v; r++)
-	                {
-	                    if (min==res[r][0])
-	                    {
-	                        if (min == nObjects-1)
-	                            min = 0;
-	                        else min++;
-	                        ok2=1;
-	                        ok1=1;
-	                    }
-	                }
-	            }
-
-	        // Searching for the max dissimilarity between Xp and the others x
-	        int usado[nObjects];
-	        int b=0;
-
-	        // Aleatory way to choose the X to be compared with Xp.
-	        while (b<nObjects)
-	        {
-	            int selected = rand()%(nObjects-1);
-	            int r;
-	            int ok3=1;
-
-	            //Verification that the chosen value was not already compared.
-	            while ((ok3!=0))
-	            {
-	                ok3=0;
-	                for (r=0; r<b; r++)
-	                {
-	                    if (selected==usado[r])
-	                    {
-	                        if (selected == nObjects-1)
-	                            selected= 0;
-	                        else selected++;
-	                        ok3=1;
-	                        break;
-	                    }
-	                }
-	            }
-	            usado[b]=selected;
-
-	            int verif=0;
-
-	            // Verificação que o elemento j não ja apartene a tabela de resultados
-	            for (r=0; r<v; r++)
-	                if (res[r][0]==selected)
-	                {
-	                    verif++;
-	                    break;
-	                }
-
-	            // Si o elemento não esta na tabela de resultados
-	            if (verif==0) {
-	                if (dMatrix[selected][p] <+ dMatrix[min][p] && selected != p)
-	                {
-	                    min=selected;
-	                }
-	            }
-	            b++;
-	        }
-
-	        res[i][0]=min; //Saving of the indice
-	        res[i][1]=data[min][9]; //Saving of the class of the indice
-
-	        //printf("Min = %d | Dissimilarity = %d | vinzinhos mais proximo numero %d  | classe = %d\n", res[i][0],dMatrix[min][p], i, res[i][1]);
-	    }
-
-	    //Counting of results
-	    int count1=0, count2=0;
-
-	    for (i=0; i<v; i++)
-	        if (res[i][1]==1)
-	            count1++;
-	        else
-	            count2++;
-
-	   // printf("count1=%d, count2=%d \n", count1, count2);
-
-	    if (count1>count2)
-	        ClasseKnn[p]=1;
-	    else ClasseKnn[p]=2;
-
-	  //  printf("p=%d na classe %d", p, ClasseKnn[p]);
-
-	    if (ClasseKnn[p]!=data[p][9])
-	        Errors++;
-
-	    //Probabilidade a posteriori 
-	    float P1=count1/v;
-	    float P2=count2/v;
-
-	    postKNN[p][0]=P1;
-	    postKNN[p][1]=P2;
-	}
-
-	//Sum rule applied here after all posteriori probability of test set have been calculated
-	int L=2; //number of classifiers
-	float prioriP1=65.3;
-	float prioriP2=34.7;
-	int finalClass[958];
-	int nErrors=0;
 
 	for (int i = startValidation; i < (startValidation+tValidation); i++)
 	{
@@ -1041,7 +800,9 @@ float task2SumRule(){
 		sum2+=postKNN[i][1];
 
 		float term1=(1-L)*prioriP1+sum1;
+		printf("term1: %f\n", term1);
 		float term2=(1-L)*prioriP2+sum2;
+		printf("term2: %f\n", term2);
 
 		if(term1>term2){
 			finalClass[i]=1;
@@ -1049,14 +810,20 @@ float task2SumRule(){
 			finalClass[i]=2;
 		}
 
+		printf("%i\n", finalClass[i]);
 		//Comparing with the original data in order to calculate the error
-		if(finalClass[i]!=data[i][9])
+		if(finalClass[i]!=data[i][9]){
 			nErrors++;
+		}
+			
+	}
+	
+	}else{
+		printf("It was not possible to proceed! Error Sum Rule!\n");
 	}
 
-	
 
-	return nErrors/tValidation;
+	return (float)nErrors/(float)tValidation;
 }
 
 

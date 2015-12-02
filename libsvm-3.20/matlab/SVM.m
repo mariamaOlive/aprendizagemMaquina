@@ -1,4 +1,4 @@
-fileID = fopen('errorSVM.txt', 'w');
+fileID = fopen('../../Results/errorSVM3.txt', 'w');
 
 for j=0:9
     for i=0 :9
@@ -10,7 +10,7 @@ for j=0:9
         training_instance_matrix = dataTraining(1:nInput, 1:nAtributes);
         training_label_vector= dataTraining(1:nInput, (nAtributes+1):10);
 
-        model = svmtrain(training_label_vector, training_instance_matrix, '');
+        model = svmtrain(training_label_vector, training_instance_matrix, '-t 3');
 
         nometest=sprintf('../../data_kfold/SVM/%i/SVMtest%i.csv',j, i);
         dataTest= csvread(nometest);

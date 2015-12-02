@@ -1,0 +1,54 @@
+KNN1
+Mean: 0.192526
+Confidence Interval:
+(0.182674 <= μ <= 0.202379) = 95%
+
+KNN3
+Mean: 0.113158
+Confidence Interval:
+(0.103435 <= μ <= 0.122881) = 95%
+
+KNN5
+Mean: 0.082000
+Confidence Interval:
+(0.070942 <= μ <= 0.093058) = 95%
+
+KNN7
+Mean: 0.058632
+Confidence Interval:
+(0.047851 <= μ <= 0.069413) = 95%
+
+KNN9
+Mean: 0.047579
+Confidence Interval:
+(0.036952 <= μ <= 0.058206) = 95%
+
+KNN11
+Mean: 0.038105
+Confidence Interval:
+(0.026552 <= μ <= 0.049658) = 95%
+
+KNN13
+Mean: 0.031684
+Confidence Interval:
+(0.020329 <= μ <= 0.043039) = 95%
+
+KNN15
+Mean: 0.028421
+Confidence Interval:
+(0.016759 <= μ <= 0.040083) = 95%
+
+KNN17
+Mean: 0.029789
+Confidence Interval:
+(0.018447 <= μ <= 0.041131) = 95%
+
+KNN19
+Mean: 0.035158
+Confidence Interval:
+(0.023808 <= μ <= 0.046508) = 95%
+
+KNN21
+Mean: 0.050842
+Confidence Interval:
+(0.039820 <= μ <= 0.061864) = 95%

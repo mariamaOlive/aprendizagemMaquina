@@ -1,0 +1,25 @@
+Bayesian Classifier
+Mean: 0.245895
+Confidence Interval:
+(0.239354 <= μ <= 0.252435) = 95%
+
+KNN Classifier
+Mean: 0.028632
+Confidence Interval:
+(0.017335 <= μ <= 0.039928) = 95%
+
+Sum Rule: Bayesian + KNN
+Mean: 0.101368
+Confidence Interval:
+(0.092084 <= μ <= 0.110653) = 95%
+
+MLP Classifier
+Mean: nan
+Confidence Interval:
+(nan <= μ <= nan) = 95%
+
+SVM Classifier
+Mean: 0.339052
+Confidence Interval:
+(0.337473 <= μ <= 0.340632) = 95%
+

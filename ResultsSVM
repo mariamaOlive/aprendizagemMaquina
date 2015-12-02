@@ -1,0 +1,21 @@
+SVM0 Classifier
+Mean: 0.339052
+Confidence Interval:
+(0.337473 <= μ <= 0.340632) = 95%
+
+SVM1 Classifier
+Mean: 0.228632
+Confidence Interval:
+(0.223299 <= μ <= 0.233965) = 95%
+
+SVM2 Classifier
+Mean: 0.123789
+Confidence Interval:
+(0.118528 <= μ <= 0.129050) = 95%
+
+SVM Classifier
+Mean: 0.340947
+Confidence Interval:
+(0.339175 <= μ <= 0.342719) = 95%
+
+

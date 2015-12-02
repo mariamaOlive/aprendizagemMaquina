@@ -20,7 +20,10 @@ long double comb(int n, int k){
 //Comparte two elements
 int cmpfunc (const void * a, const void * b)
 {
-   return ( *(float*)a - *(float*)b );
+
+	int (*a2)[2]=a;
+	int (*b2)[2]=b;
+   return ( (*a2)[0] - (*b2)[0]);
 }
 
 
@@ -41,52 +44,8 @@ void randArray(int *array, int nElements){
 	}
 }
 
-//Confidence Interval
-void confidenceInterval(float sampleSize, float mean, float variance){
-	//Confidence interval of 95% ->Z(α/2)= 1.96
-	//With Normal
-	//e=Z(α/2)*(σ/sqrt n)
-
-	float sigma = sqrt(variance);
-	float e= 1.96 * (sigma/sqrt(sampleSize));
-
-	float intDown=mean-e;
-	float intUp=mean+e;
-
-	printf("Confidence Interval:\n");
-	printf("(%f <= μ <= %f) = 95%%\n", intDown,intUp);
-}
-
-//Calculating Mean μ e Variance  σˆ2
-void statistics(float sample[], int sampleSize){
-
-	float mean;
-	float variance;
-	float sampleSum=0;
-
-
-	//Mean
-	for (int i = 0; i <sampleSize ; i++)
-	{
-		sampleSum+=sample[i];
-	}
-
-	mean=sampleSum/sampleSize;
-
-	//Variance
-	sampleSum=0;
-	for (int i = 0; i < sampleSize; i++)
-	{
-		sampleSum+=pow((sample[i]-mean),2);
-	}
-	variance=sampleSum/sampleSize;
-
-	confidenceInterval(sampleSize, mean, variance);
-}
-
-
 //Task1
-void task1(int data[958][10]){
+void task1(int data[958][10], FILE *resultsFile){
 
 float totalU[100][958][2];
 int nObjects=958;
@@ -130,6 +89,7 @@ int nAtributes=9;
 	srand(time(NULL));
 
 	for(int l=0; l<100; l++){
+		printf("Fuzzy Iteration: %i\n", l);
 		int t=0; //counts the number of iterations
 
 		//Selecting prototypes
@@ -139,7 +99,6 @@ int nAtributes=9;
 			{	
 				int selected = rand()%(nObjects-1);
 				proto[i][j]=selected;
-				printf("%i\n",selected);
 			}
 			
 		}
@@ -296,8 +255,6 @@ int nAtributes=9;
 			//Comparing J(t) with J(t-1)
 			if(fabs(J1-J)<=e){
 				J=J1;
-				printf("total de interaçoes em %i: %i\n",l,t+1);
-
 				break;
 			}
 
@@ -306,7 +263,6 @@ int nAtributes=9;
 		}
 
 		//Gets minimum J 
-		//printf("J= %f\n", J);
 		if(J<bestJ){
 			bestJ=J;
 			bestJIndex=l;
@@ -330,16 +286,18 @@ int nAtributes=9;
 		}
 	}
 
-	printf("Melhor Particao= %d\n", bestJIndex);
+	fprintf(resultsFile,"Melhor Particao encontrada na iteraçao: %i\n", bestJIndex);
+	fprintf(resultsFile,"-------------------------------\n");
 	for (int i = 0; i < 958; ++i)
 	{
+		fprintf(resultsFile, "U%i= ", i);
 		for (int j = 0; j <2; ++j)
 		{
-			//printf("%f ", totalU[bestJIndex][i][j]);
+			fprintf(resultsFile,"%f ", totalU[bestJIndex][i][j]);
 		}
-		//printf("\n");
-
+		fprintf(resultsFile,"\n");
 	}
+	fprintf(resultsFile,"-------------------------------\n");
 
 	//Dada a melhor partição Fuzzy gerar partição Hard 
 	int class1[nObjects];
@@ -375,33 +333,26 @@ int nAtributes=9;
 
 		if(numberErrors1<numberErrors2){
 			classFinal=class1;
-			printf("Porcentagem de Erro= %f\n", ((float)numberErrors1/(float)nObjects));
+			fprintf(resultsFile,"Porcentagem de Erro= %f\n", (100*(float)numberErrors1/(float)nObjects));
 			for (int i = 0; i < k; ++i)
 			{
-				printf("Medoids da classe%i\n", i+1);
+				fprintf(resultsFile,"Medoids da classe%i\n", i+1);
 				for (int j = 0; j < q; ++j)
 				{
-					printf("%i\n", bestProto[i][j]);
+					fprintf(resultsFile,"%i\n", bestProto[i][j]);
 				}
 			}
 		}else{
 			classFinal=class2;
-			printf("Porcentagem de Erro= %f\n", ((float)numberErrors2/(float)nObjects));
+			fprintf(resultsFile,"Porcentagem de Erro= %f\n", ((float)numberErrors2/(float)nObjects));
 			for (int i = k; i >0; --i)
 			{
-				printf("Medoids da classe%i\n", i);
+				fprintf(resultsFile,"Medoids da classe%i\n", i);
 				for (int j = 0; j < q; ++j)
 				{
-					printf("%i\n", bestProto[i-1][j]);
+					fprintf(resultsFile,"%i\n", bestProto[i-1][j]);
 				}
 			}
-		}
-
-
-		for (int i = 0; i < nObjects; ++i)
-		{
-
-			//printf("%i\n",classFinal[i]);
 		}
 
 
@@ -435,13 +386,21 @@ int nAtributes=9;
 
 	long double num= (comb(n11,2)+comb(n22,2)+comb(n12,2)+comb(n21,2))-(comb(u1,2)+comb(u2,2))*((comb(v1,2)+comb(v2,2))/comb(nObjects,2));
 
-	printf("%Lf\n",num);
 	long double quo=(((comb(u1,2)+comb(u2,2))+(comb(v1,2)+comb(v2,2)))/2)-((comb(u1,2)+comb(u2,2))/(comb(nObjects,2)));
 
-	printf("%Lf\n",quo);
 	long double CR= num/quo;
-	printf("%Lf\n", CR);
-			  
+	fprintf(resultsFile,"Indice de Rand Corrigido= %Lf\n", CR);
+
+
+	fprintf(resultsFile,"Erro classe1= %f\n", (float)n12/(float)626);	
+	fprintf(resultsFile,"Erro classe2= %f\n", (float)n21/(float)332);	
+
+	fprintf(resultsFile,"\nParticao Hard\n");
+
+	for (int i = 0; i < nObjects; ++i)
+	{
+		fprintf(resultsFile,"Objeto %i: %i\n",i,classFinal[i]);
+	}		  
 
 }
 
@@ -579,7 +538,7 @@ float task2(int data[950][10], int startValidation, int nPositive, int nNegative
 
 	fclose(bayesFile);
 
-	return ((float)wrong/(float)tValidation)*100; //returns the percentage of wrongly classified
+	return ((float)wrong/(float)tValidation); //returns the percentage of wrongly classified
 }
 
 float task2b(int data[950][10], int startValidation, int nPositive, int nNegative, int nTotal, int nFold){
@@ -606,126 +565,96 @@ float task2b(int data[950][10], int startValidation, int nPositive, int nNegativ
 				if(data[i][k]!=data[j][k]){
 					cont++;
 				}
-			}
+			}		
 			dMatrix[i][j]=cont;
-			//printf("Dissimilarity between i:%d and j:%d = %d\n",i, j, dMatrix[i][j]);
 			dMatrix[j][i]=cont;
+			//printf("Dissimilarity between i:%d and j:%d = %d\n",i, j, dMatrix[i][j]);
 		}
 		//printf("\n");
 	}
 
-	int v=10; //Numero de vizinhos
+	int v=15; //Number of neighbors
 	int p; //Xp where p in [1..n]
 	int ClasseKnn[nObjects]; //Tabela de resultados
 	int Errors=0; //Contagem de error entre classificação a priori e com a método do k-NN vizinhos
 
-	 int res[v][4];
+	int distP[958][2];
+	
+	for (int i = 0; i < nObjects; ++i)
+	distP[i][0]=1000;
+
+	int res[v][4];
 
 	for (p=startValidation; p<(startValidation+tValidation); p++)
 	{
-	    // Tabela que vai contender os v vinzinhos mais proximos de Xp
-	    //printf("\n\n**** p = %d *** \n\n", p);
 
-	    //Initialização da tabela dos vizinhos para Xp.
-	    for (i=0; i<v;  i++) res[i][0]=-1;
+		for (int i = 0; i < nObjects; i++)
+		{
+			if((i<startValidation || i>=(startValidation+tValidation))&& i!=p){
+			distP[i][0]=dMatrix[p][i];
+			distP[i][1]=data[i][9];
+			}
+		}
 
-	    srand(time(NULL));
-	    for (i=0; i<v; i++)
-	    {
-	        // Search for the first value posible
-	        int min = rand()%(nObjects-1);
-	        int r;
+		//Ordernar a matriz dispP para pegar todos as distâncias menores
+		qsort(distP, nObjects, 2*(sizeof(int)),cmpfunc);
 
-	        int ok1=1;
-	        int ok2=1;
-	            while ((ok1 != 0) && (ok2!=0))
-	            {
-	                if (p==min)
-	                {
-	                    if (min == nObjects-1)
-	                        min = 0;
-	                    else min++;
-	                    ok1=0;
-	                }
-	                else
-	                    ok1=0;
+		// for (int i = 0; i < nObjects; ++i)
+		// {
+		//  	printf("%i %i\n", distP[i][0], distP[i][1]);
+		// }
 
-	                for (r=0; r<v; r++)
-	                {
-	                    if (min==res[r][0])
-	                    {
-	                        if (min == nObjects-1)
-	                            min = 0;
-	                        else min++;
-	                        ok2=1;
-	                        ok1=1;
-	                    }
-	                }
-	            }
+		int check=1;
+		int v2=v-1;
+		while(check){
+			if(distP[v2][0]!=distP[v2+1][0]){
+				check=0;
+			}else{
+				v2++;
+			}
+		}
 
-	        // Searching for the max dissimilarity between Xp and the others x
-	        int usado[nObjects];
-	        int b=0;
+		check=1;
+		int v3=v-1;
+		while(check){
+			if((distP[v3][0]!=distP[v3+1][0])|| v3==0){
+				check=0;
+			}else{
+				v3--;
+			}
+		}
 
-	        // Aleatory way to choose the X to be compared with Xp.
-	        while (b<nObjects)
-	        {
-	            int selected = rand()%(nObjects-1);
-	            int r;
-	            int ok3=1;
+		//Trick to make things right!!!
+		if(v3!=0){
+			v3++;
+		}
 
-	            //Verification that the chosen value was not already compared.
-	            while ((ok3!=0))
-	            {
-	                ok3=0;
-	                for (r=0; r<b; r++)
-	                {
-	                    if (selected==usado[r])
-	                    {
-	                        if (selected == nObjects-1)
-	                            selected= 0;
-	                        else selected++;
-	                        ok3=1;
-	                        break;
-	                    }
-	                }
-	            }
-	            usado[b]=selected;
+		int auxArray[v2-v3+1];
+		int j=v3;
+		for (int i = 0 ; i <v2-v3+1 ; i++, j++)
+		{
+			auxArray[i]=j;
+		}
+		randArray(auxArray, v2-v3+1);
 
-	            int verif=0;
-
-	            // Verificação que o elemento j não ja apartene a tabela de resultados
-	            for (r=0; r<v; r++)
-	                if (res[r][0]==selected)
-	                {
-	                    verif++;
-	                    break;
-	                }
-
-	            // Si o elemento não esta na tabela de resultados
-	            if (verif==0) {
-	                if (dMatrix[selected][p] <+ dMatrix[min][p] && selected != p)
-	                {
-	                    min=selected;
-	                }
-	            }
-	            b++;
-	        }
-
-	        res[i][0]=min; //Saving of the indice
-	        res[i][1]=data[min][9]; //Saving of the class of the indice
-
-	        //printf("Min = %d | Dissimilarity = %d | vinzinhos mais proximo numero %d  | classe = %d\n", res[i][0],dMatrix[min][p], i, res[i][1]);
-	    }
-
-	    //Counting of results
+		//Counting of results
 	    int count1=0, count2=0;
 
-	    for (i=0; i<v; i++)
-	        if (res[i][1]==1)
+	    for (i=0; i<v3; i++)
+	        if (distP[i][1]==1)
 	            count1++;
 	        else
 	            count2++;
+
+	    int k=0;
+	   	for (int i = v3; i < v; i++,k++)
+	   	{
+	   		if (distP[auxArray[k]][1]==1)
+	            count1++;
+	        else
+	            count2++;
+	   	}
+
 
 	   // printf("count1=%d, count2=%d \n", count1, count2);
 
@@ -743,12 +672,12 @@ float task2b(int data[950][10], int startValidation, int nPositive, int nNegativ
 
 	    if (ClasseKnn[p]!=data[p][9])
 	        Errors++;
-	}
-
-	fclose(knnFile);
+}
+	    
+	 fclose(knnFile);
 	//printf("Percentage of errors between classification K-NN and real classification = %f\n", (float)Errors/(float)tValidation);
 
-	return (float)Errors/(float)tValidation;
+	return ((float)Errors/(float)tValidation);
 }
 
 
@@ -784,12 +713,6 @@ float task2SumRule(int data[950][10], int startValidation, int nPositive, int nN
 
 	for (int i = startValidation; i < (startValidation+tValidation); i++)
 	{
-		printf("%f %f\n",postBayes[i][0],postBayes[i][1]);
-	}
-
-
-	for (int i = startValidation; i < (startValidation+tValidation); i++)
-	{
 		float sum1=0;
 		float sum2=0;
 
@@ -799,9 +722,9 @@ float task2SumRule(int data[950][10], int startValidation, int nPositive, int nN
 		sum2+=postKNN[i][1];
 
 		float term1=(1-L)*prioriP1+sum1;
-		printf("term1: %f\n", term1);
+		//printf("term1: %f\n", term1);
 		float term2=(1-L)*prioriP2+sum2;
-		printf("term2: %f\n", term2);
+		//printf("term2: %f\n", term2);
 
 		if(term1>term2){
 			finalClass[i]=1;
@@ -809,20 +732,23 @@ float task2SumRule(int data[950][10], int startValidation, int nPositive, int nN
 			finalClass[i]=2;
 		}
 
-		printf("%i\n", finalClass[i]);
+		//printf("%i\n", finalClass[i]);
 		//Comparing with the original data in order to calculate the error
 		if(finalClass[i]!=data[i][9]){
 			nErrors++;
 		}
 			
 	}
+
+	fclose(knnFile);
+	fclose(bayesFile);
 	
 	}else{
 		printf("It was not possible to proceed! Error Sum Rule!\n");
 	}
 
 
-	return (float)nErrors/(float)tValidation;
+	return ((float)nErrors/(float)tValidation);
 }
 
 
@@ -896,7 +822,30 @@ if(ifp!=NULL){
 }
 
 
+//Writing file with numerical data
+	//Label used= 1 for positive cases and 2 for negative cases
 
+FILE *ofp;
+ofp= fopen("tic-tac-toe-numerical.csv", "w");
+
+if(ofp!=NULL){
+	printf("File successfully opened for Writing!\n");
+
+	for (int i = 0; i < 958; i++)
+	{	//Label
+
+		for(int j = 0; j < 9; j++)
+		{	
+		fprintf(ofp, " %d,",data[i][j]);
+		}
+		fprintf(ofp, "%d\n", data[i][9]);
+	}
+
+}else{
+	printf("The file was not open!\n");
+}
+fclose(ofp);
+ 	
 
 
 
@@ -904,8 +853,13 @@ if(ifp!=NULL){
 
 //////////////////////data structure uploaded//////////////////
 //Task 1
+	// FILE *resultsFuzzyFile;
+	// resultsFuzzyFile= fopen("Results/resultsTaks1.txt", "w");
 
-	task1(data);
+	// //Executes the algorith of task1 and prints its results into the file "Results/resultsTaks1.txt"
+	// task1(data,resultsFuzzyFile);
+
+	// fclose(resultsFuzzyFile);
 	
 
 //Task 2
@@ -929,38 +883,60 @@ if(ifp!=NULL){
 
 		//Randomize input data
 // 		//Each folder will contain 95 samples (62 positive / 33 negative) that will be chosen randomly
+		FILE *resultsBayesFile;
+		resultsBayesFile= fopen("Results/errorBayesian.txt", "w");
+		FILE *resultsKNNFile;
+		resultsKNNFile= fopen("Results/errorKNN15.txt", "w");
+		FILE *resultsSumFile;
+		resultsSumFile= fopen("Results/errorSum.txt", "w");
+
+		char kfoldName[1000];
+		FILE *filekfold;
+
+		char kfoldRead[1000];
+		FILE *filekfoldRead;
 
 
-		// int nFold=10;
-		// int nPositive=62;
-		// int nNegative=33;
-		// int nTotal=nPositive+nNegative;
+		int nFold=10;
+		int nPositive=62;
+		int nNegative=33;
+		int nTotal=nPositive+nNegative;
 		
 
-		// int kData [nTotal*nFold][10];
-		// int n[958];
-		// for(int i=0; i<958; i++){
-		// 		n[i]=i;
-		// }
+		int kData [nTotal*nFold][10];
+		int n[950];
+		for(int i=0; i<950; i++){
+				n[i]=i;
+		}
 
-		// //Calling tasks to execute with cross validation
+		//Calling tasks to execute with cross validation
 
-		// int executeKFold=10;
-		// float meansTask2 [100];
-		// float meansTask2b[100];
-		// float meansTask2SumRule[100];
-		// int cont=0;
+		int executeKFold=10;
+		float meansTask2 [100];
+		float meansTask2b[100];
+		float meansTask2SumRule[100];
+		int cont=0;
 
-		// //Execute k-fold 10x... in the end we are going to have 100 samples
-		// for (int j = 0; j < executeKFold ; j++)
-		// {
-		// 	//Creating randomized array as base
-		// 	randArray(n,626);
-		// 	randArray(&n[626], 332);
 
-		// 	int P=0;
-		// 	int N=626;
-		// 	int i=0;
+		//Execute k-fold 10x... in the end we are going to have 100 samples
+
+		for (int j = 0; j < executeKFold ; j++)
+		{
+			
+
+		//ATTENTION: Just run this part of the experiment once in ordet to create the k-fold files
+		//If you want to create a new k-fold data uncomment the code below
+
+		// sprintf(kfoldName,"data_kfold/OTHERS/%i", j);
+		// filekfold=fopen(kfoldName,"w");
+			
+		// //Creating randomized array as base
+		// randArray(n,626);
+		// randArray(&n[626], 332);
+
+		// int P=0;
+		// int N=626;
+		// int i=0;
 
 		// 	//Filling folders
 		// 	for (int f = 0; f < nFold ; f++){
@@ -968,198 +944,172 @@ if(ifp!=NULL){
 		// 		int pAux= P+nPositive;
 		// 		for (; P < pAux ; P++, i++)
 		// 		{	
-		// 			for (int j = 0; j < 10; j++)
+		// 			for (int j = 0; j < 9; j++)
 		// 			{
 		// 				kData[i][j]=data[n[P]][j];
+		// 				fprintf(filekfold, "%i ", kData[i][j]);
 		// 			}
+		// 			kData[i][9]=data[n[P]][9];
+		// 			fprintf(filekfold, "%i\n", kData[i][9]);
 		// 		}
 
 		// 		int nAux= N+nNegative;
 		// 		for (; N < nAux; N++, i++)
 		// 		{
-		// 			for (int j = 0; j < 10; j++)
+		// 			for (int j = 0; j < 9; j++)
 		// 			{
 		// 				kData[i][j]=data[n[N]][j];
+		// 				fprintf(filekfold, "%i ", kData[i][j]);
 		// 			}
+		// 			kData[i][9]=data[n[N]][9];
+		// 			fprintf(filekfold, "%i\n", kData[i][9]);
 		// 		}
 		// 	}
+		// fclose(filekfold);
 
-		// 	int startValidation=0;
-		// 	int startValidation2=nPositive+nNegative;
+		//Loading k-fold data
+		//If the code above is uncommented, comment this part below the LOAD 
+		sprintf(kfoldRead,"data_kfold/OTHERS/%i", j);
+		printf("%s\n", kfoldRead);
+		filekfoldRead=fopen(kfoldRead,"r");
 
-		// 	for (int i = 0; i < nFold; i++)
-		// 	{
-		// 		//Writing k-fold data on files
-		// 		//Writing on file for the SVM classifier
-		// 		//Label used= +1 for positive cases and -1 for negative cases
+		for (int i = 0; i < 950; ++i)
+		{
+			for (int j = 0; j < 10; ++j)
+			{
+				fscanf(filekfoldRead,"%i",&kData[i][j]);
+			}
+		}
+		
+		fclose(filekfoldRead);
+		//////////////////////////////////////////////////////
 
-		// 		char *path= "/Users/mariamaoliveira/Documents/UFPE/2015-2/IF699_AM/Projeto/aprendizagemMaquina"; //I did not manage to use relative pahth
-		// 		//SVM input
-		// 		char trainingNameSVM[1000];
-		// 		//Path to the project folder
-		// 		sprintf(trainingNameSVM,"%s/data_kfold/SVM/%i/SVMtraining%i.csv",path,j,i);
-		// 		//printf("%s\n", trainingNameSVM);
-		// 		char testNameSVM[1000];
-		// 		sprintf(testNameSVM,"%s/data_kfold/SVM/%i/SVMtest%i.csv",path,j,i);
-		// 		char *modeW="w";
 
-		// 		FILE *fTraining;
-		// 		FILE *fTest;
-		// 		fTraining= fopen(trainingNameSVM, modeW);
-		// 		fTest=fopen(testNameSVM,modeW);
+			int startValidation=0;
+			int startValidation2=nPositive+nNegative;
 
-		// 		if(fTraining!=NULL || fTest!=NULL){
-		// 			printf("SVM File successfully opened for Writing!\n");
+			for (int i = 0; i < nFold; i++)
+			{
+				//Writing k-fold data on files
+				//Writing on file for the SVM classifier
+				//Label used= +1 for positive cases and -1 for negative cases
+
+				char *path= "/Users/mariamaoliveira/Documents/UFPE/2015-2/IF699_AM/Projeto/aprendizagemMaquina"; //I did not manage to use relative pahth
+				//SVM input
+				char trainingNameSVM[1000];
+				//Path to the project folder
+				sprintf(trainingNameSVM,"%s/data_kfold/SVM/%i/SVMtraining%i.csv",path,j,i);
+				//printf("%s\n", trainingNameSVM);
+				char testNameSVM[1000];
+				sprintf(testNameSVM,"%s/data_kfold/SVM/%i/SVMtest%i.csv",path,j,i);
+				char *modeW="w";
+
+				FILE *fTraining;
+				FILE *fTest;
+				fTraining= fopen(trainingNameSVM, modeW);
+				fTest=fopen(testNameSVM,modeW);
+
+				if(fTraining!=NULL || fTest!=NULL){
+					printf("SVM File successfully opened for Writing!\n");
 					
-		// 			for (int l = 0; l < 950; l++)
-		// 			{	//Label
-		// 				if(l<startValidation || l>=(startValidation+(nPositive+nNegative))){
+					for (int l = 0; l < 950; l++)
+					{	//Label
+						if(l<startValidation || l>=(startValidation+(nPositive+nNegative))){
 							
-		// 					for (int j = 0; j < 9; j++)
-		// 					{	
-		// 						fprintf(fTraining, "%d,",kData[l][j]);
-		// 					}
-		// 					fprintf(fTraining, "%d", kData[l][9]);
-		// 					fprintf(fTraining, "\n");
-		// 				}else{
+							for (int j = 0; j < 9; j++)
+							{	
+								fprintf(fTraining, "%d,",kData[l][j]);
+							}
+							fprintf(fTraining, "%d", kData[l][9]);
+							fprintf(fTraining, "\n");
+						}else{
 							
-		// 					for (int j = 0; j < 9; j++)
-		// 					{	
-		// 						fprintf(fTest, "%d,",kData[l][j]);
-		// 					}
-		// 					fprintf(fTest, "%d", kData[l][9]);
-		// 					fprintf(fTest, "\n");
-		// 				}
-		// 			}
+							for (int j = 0; j < 9; j++)
+							{	
+								fprintf(fTest, "%d,",kData[l][j]);
+							}
+							fprintf(fTest, "%d", kData[l][9]);
+							fprintf(fTest, "\n");
+						}
+					}
 
-		// 		}else{
-		// 			printf("The SVM file was not open!\n");
-		// 		}
+				}else{
+					printf("The SVM file was not open!\n");
+				}
 
-		// 		fclose(fTraining);
-		// 		fclose(fTest);
+				fclose(fTraining);
+				fclose(fTest);
 
-		// 		if(i==0){
-		// 		//MLP input
-		// 		char trainingNameMLP[1000];
-		// 		sprintf(trainingNameMLP,"%s/data_kfold/MLP/MLP%i.csv",path,j);
+				if(i==0){
+				//MLP input
+				char trainingNameMLP[1000];
+				sprintf(trainingNameMLP,"%s/data_kfold/MLP/MLP%i.csv",path,j);
 				
 
-		// 		FILE *fTrainingMLP;
+				FILE *fTrainingMLP;
 				
-		// 		fTrainingMLP= fopen(trainingNameMLP, modeW);
+				fTrainingMLP= fopen(trainingNameMLP, modeW);
 				
 
-		// 		if(fTrainingMLP!=NULL){
-		// 			printf("MLP File successfully opened for Writing!\n");
+				if(fTrainingMLP!=NULL){
+					printf("MLP File successfully opened for Writing!\n");
 
-		// 			for (int l = 0; l < 950; l++)
-		// 			{
+					for (int l = 0; l < 950; l++)
+					{
 							
-		// 					for (int j = 0; j < 9; j++)
-		// 					{	
-		// 						fprintf(fTrainingMLP, "%d,",kData[l][j]);
-		// 					}
+							for (int j = 0; j < 9; j++)
+							{	
+								fprintf(fTrainingMLP, "%d,",kData[l][j]);
+							}
 
-		// 					if(kData[l][9]==2){
-		// 						fprintf(fTrainingMLP, "%d,", 0);
-		// 						fprintf(fTrainingMLP, "%d", 1);
-		// 					}else{
-		// 						fprintf(fTrainingMLP, "%d,", 1);
-		// 						fprintf(fTrainingMLP, "%d", 0);
-		// 					}
-		// 					fprintf(fTrainingMLP, "\n");
+							if(kData[l][9]==2){
+								fprintf(fTrainingMLP, "%d,", 0);
+								fprintf(fTrainingMLP, "%d", 1);
+							}else{
+								fprintf(fTrainingMLP, "%d,", 1);
+								fprintf(fTrainingMLP, "%d", 0);
+							}
+							fprintf(fTrainingMLP, "\n");
 						
-		// 			}
+					}
 
-		// 		}else{
-		// 			printf("The MLP file was not open!\n");
-		// 		}
+				}else{
+					printf("The MLP file was not open!\n");
+				}
 				
-		// 		fclose(fTrainingMLP);
-		// 		}
+				fclose(fTrainingMLP);
+				}
 
-		// 		//Task 2: Naive Bayesian Classifier
-		// 		meansTask2[cont]=task2(kData, startValidation,nPositive,nNegative,nTotal*nFold,nFold);
-		// 		printf("Bayesian: %f\n", meansTask2[cont]);
-		// 		//Task 2b: KNN
-		// 		meansTask2b[cont]=task2b(kData, startValidation,nPositive,nNegative,nTotal*nFold,nFold);
-		// 		printf("KNN: %f\n", meansTask2b[cont]);
+				//Task 2: Naive Bayesian Classifier
+				meansTask2[cont]=task2(kData, startValidation,nPositive,nNegative,nTotal*nFold,nFold);
+				printf("Bayesian: %f\n", meansTask2[cont]);
+				fprintf(resultsBayesFile, "%f\n", meansTask2[cont]);
+				//Task 2b: KNN
+				meansTask2b[cont]=task2b(kData, startValidation,nPositive,nNegative,nTotal*nFold,nFold);
+				printf("KNN: %f\n", meansTask2b[cont]);
+				fprintf(resultsKNNFile, "%f\n", meansTask2b[cont]);
 
-		// 		meansTask2SumRule[cont]=task2SumRule(kData, startValidation,nPositive,nNegative,nTotal*nFold,nFold);
-		// 		printf("SumRule: %f\n",meansTask2SumRule[cont]);
+				meansTask2SumRule[cont]=task2SumRule(kData, startValidation,nPositive,nNegative,nTotal*nFold,nFold);
+				printf("SumRule: %f\n",meansTask2SumRule[cont]);
+				fprintf(resultsSumFile, "%f\n", meansTask2SumRule[cont]);
 
-		// 		cont++;
+				cont++;
 				
-		// 		//Updating trainingData and validationData
-		// 		startValidation+=(nPositive+nNegative);
-		// 		if(i<8){
-		// 			startValidation2+=(nPositive+nNegative);
-		// 		}else{
-		// 			startValidation2=0;
-		// 		}
+				//Updating trainingData and validationData
+				startValidation+=(nPositive+nNegative);
+				if(i<8){
+					startValidation2+=(nPositive+nNegative);
+				}else{
+					startValidation2=0;
+				}
 				
-		// 	}
-		// }
+			}
+		}
+
+		fclose(resultsBayesFile);
+		fclose(resultsKNNFile);
+		fclose(resultsSumFile);
 		
-	
 
-
-// //File variables
-// 	// FILE *fileErrorMLP;
-// 	// char *fileErrorMLPName="MATLAB/errorMLP.txt";	
-// 	// fileErrorMLP= fopen(fileErrorMLPName, "r");
-// 	// float errorMLP[100];
-
-// 	// if(fileErrorMLPName!=NULL){
-// 	// 	printf("File Error MLP successfully opened!\n");
-// 	// 	for (int i = 0; i < 100; i++)
-// 	// 	{
-// 	// 		fscanf(fileErrorMLP,"%f",&errorMLP[i]);
-// 	// 	}
-		
-// 	// }else{
-// 	// 	printf("Error MLP file was not open!\n");
-// 	// }
-
-// 	// FILE *fileErrorSVM;
-// 	// char *fileErrorSVMName="libsvm-3.20/matlab/errorMLP.txt";	
-// 	// fileErrorSVM= fopen(fileErrorSVMName, "r");
-// 	// float errorSVM[100];
-
-// 	// if(fileErrorSVMName!=NULL){
-// 	// 	printf("File Error MLP successfully opened!\n");
-// 	// 	for (int i = 0; i < 100; i++)
-// 	// 	{
-// 	// 		fscanf(fileErrorSVM,"%f",&errorSVM[i]);
-// 	// 	}
-		
-// 	// }else{
-// 	// 	printf("Error MLP file was not open!\n");
-// 	// }
-
-// 	// ///////////////////////////STATISTICS//////////////////////////////
-// 	// //Calculating Mean and Confidence interval of the MLP
-// 	// statistics(meansTask2,100);
-// 	// //statistics(meansTask2b,100);
-// 	// statistics(errorMLP,100);
-// 	// statistics(errorSVM,100);
-
-
-
-
-// 	//	task2(kData, startValidation,nPositive,nNegative,nTotal*nFold,nFold);
-	
-
-
-// 		// for (int i = 0; i < nTotal*nFold; ++i)
-// 		// {printf("%i=", i);
-// 		// 	for (int j = 0; j < 10; j++)
-// 		// 	{
-// 		// 		printf("%i ",kData[i][j]);
-// 		// 	}
-// 		// 	printf("\n");
-// 		// }
-
-// return 0;
+return 0;
 }

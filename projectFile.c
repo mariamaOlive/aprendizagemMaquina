@@ -853,13 +853,13 @@ fclose(ofp);
 
 //////////////////////data structure uploaded//////////////////
 //Task 1
-	// FILE *resultsFuzzyFile;
-	// resultsFuzzyFile= fopen("Results/resultsTaks1.txt", "w");
+	FILE *resultsFuzzyFile;
+	resultsFuzzyFile= fopen("Results/resultsTaks1.txt", "w");
 
-	// //Executes the algorith of task1 and prints its results into the file "Results/resultsTaks1.txt"
-	// task1(data,resultsFuzzyFile);
+	//Executes the algorith of task1 and prints its results into the file "Results/resultsTaks1.txt"
+	task1(data,resultsFuzzyFile);
 
-	// fclose(resultsFuzzyFile);
+	fclose(resultsFuzzyFile);
 	
 
 //Task 2
@@ -994,14 +994,14 @@ fclose(ofp);
 				//Writing on file for the SVM classifier
 				//Label used= +1 for positive cases and -1 for negative cases
 
-				char *path= "/Users/mariamaoliveira/Documents/UFPE/2015-2/IF699_AM/Projeto/aprendizagemMaquina"; //I did not manage to use relative pahth
+				char *path= ""; //I did not manage to use relative pahth
 				//SVM input
 				char trainingNameSVM[1000];
 				//Path to the project folder
-				sprintf(trainingNameSVM,"%s/data_kfold/SVM/%i/SVMtraining%i.csv",path,j,i);
+				sprintf(trainingNameSVM,"%sdata_kfold/SVM/%i/SVMtraining%i.csv",path,j,i);
 				//printf("%s\n", trainingNameSVM);
 				char testNameSVM[1000];
-				sprintf(testNameSVM,"%s/data_kfold/SVM/%i/SVMtest%i.csv",path,j,i);
+				sprintf(testNameSVM,"%sdata_kfold/SVM/%i/SVMtest%i.csv",path,j,i);
 				char *modeW="w";
 
 				FILE *fTraining;
@@ -1043,7 +1043,7 @@ fclose(ofp);
 				if(i==0){
 				//MLP input
 				char trainingNameMLP[1000];
-				sprintf(trainingNameMLP,"%s/data_kfold/MLP/MLP%i.csv",path,j);
+				sprintf(trainingNameMLP,"%sdata_kfold/MLP/MLP%i.csv",path,j);
 				
 
 				FILE *fTrainingMLP;

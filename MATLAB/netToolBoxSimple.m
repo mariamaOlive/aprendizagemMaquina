@@ -59,9 +59,9 @@ cm=zeros(2,2);
                 trainFcn = 'traingd'; 
                 
                 % Create a Pattern Recognition Network
-                hiddenLayerSize = nHidden(2);
+                hiddenLayerSize = nHidden(3);
                 net = patternnet(hiddenLayerSize,trainFcn);
-                net.trainParam.lr=lr(1); %Taxa de aprendizado
+                net.trainParam.lr=lr(2); %Taxa de aprendizado
                 net.trainParam.epochs= 50000; %Number max of Epochs
                 %net.trainParam.max_fail=5;
                 %net.layers{1}.transferFcn = 'logsig';
@@ -76,6 +76,7 @@ cm=zeros(2,2);
                 net.divideParam.valInd = valInd;
                 net.divideParam.testInd = testInd;
                 % Train the Network
+                net.trainParam.showWindow=false;
                 [net,tr] = train(net,x,t);
                 
                 % Test the Network
@@ -103,12 +104,13 @@ cm=zeros(2,2);
                 %figure, plotconfusion(tLabel,y)
                 [c,cm2,ind,per] = confusion(tLabel,y);
                 cm= cm+cm2;
-                figure, plotroc(t(tr.testInd),y)
-                disp(cm);
+                %figure, plotroc(t(tr.testInd),y)
+                
                
                 
             end
         end
+        disp(cm);
         fclose(fileID);
 %    end
 %end

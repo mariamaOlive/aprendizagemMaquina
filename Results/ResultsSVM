@@ -13,7 +13,7 @@ Mean: 0.123789
 Confidence Interval:
 (0.118528 <= μ <= 0.129050) = 95%
 
-SVM Classifier
+SVM3 Classifier
 Mean: 0.340947
 Confidence Interval:
 (0.339175 <= μ <= 0.342719) = 95%

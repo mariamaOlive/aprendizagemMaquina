@@ -14,9 +14,9 @@ Confidence Interval:
 (0.092084 <= μ <= 0.110653) = 95%
 
 MLP Classifier
-Mean: nan
+Mean: 0.075684
 Confidence Interval:
-(nan <= μ <= nan) = 95%
+(0.066773 <= μ <= 0.084595) = 95%
 
 SVM Classifier
 Mean: 0.339052
